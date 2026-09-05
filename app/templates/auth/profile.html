@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block header_title %}My Profile{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-body text-center py-4">
+        <div class="avatar-circle mx-auto mb-3" style="width:72px;height:72px;font-size:1.6rem;">
+          {{ current_user.full_name[:1] | upper }}
+        </div>
+        <h5 class="mb-0">{{ current_user.full_name }}</h5>
+        <span class="badge badge-role mt-2">{{ current_user.role | role_label }}</span>
+        <hr>
+        <div class="text-start small">
+          <p class="mb-1"><i class="bi bi-person-badge me-2 text-pia-gold"></i><strong>Employee ID:</strong> {{ current_user.employee_id }}</p>
+          <p class="mb-1"><i class="bi bi-envelope me-2 text-pia-gold"></i><strong>Email:</strong> {{ current_user.email }}</p>
+          {% if current_user.phone %}<p class="mb-1"><i class="bi bi-telephone me-2 text-pia-gold"></i><strong>Phone:</strong> {{ current_user.phone }}</p>{% endif %}
+          {% if current_user.designation %}<p class="mb-1"><i class="bi bi-briefcase me-2 text-pia-gold"></i><strong>Designation:</strong> {{ current_user.designation }}</p>{% endif %}
+          {% if current_user.station %}<p class="mb-1"><i class="bi bi-geo-alt me-2 text-pia-gold"></i><strong>Station:</strong> {{ current_user.station.name }}</p>{% endif %}
+          <p class="mb-0"><i class="bi bi-clock-history me-2 text-pia-gold"></i><strong>Last Login:</strong> {{ current_user.last_login_at | dt }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header-pia">
+        <h6><i class="bi bi-shield-lock me-2"></i>Change Password</h6>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.current_password.label(class="form-label") }} <span class="required-mark">*</span>
+            {{ form.current_password(class="form-control" + (" is-invalid" if form.current_password.errors else "")) }}
+            {% for error in form.current_password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.new_password.label(class="form-label") }} <span class="required-mark">*</span>
+            {{ form.new_password(class="form-control" + (" is-invalid" if form.new_password.errors else "")) }}
+            {% for error in form.new_password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.confirm_password.label(class="form-label") }} <span class="required-mark">*</span>
+            {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+            {% for error in form.confirm_password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+          </div>
+
+          {{ form.submit(class="btn btn-pia-primary") }}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

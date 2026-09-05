@@ -1,0 +1,5 @@
+<div class="empty-state">
+  <i class="bi {{ icon | default('bi-inbox') }}"></i>
+  <h6>{{ title | default('No data available yet.') }}</h6>
+  {% if subtitle %}<p class="mb-0 small">{{ subtitle }}</p>{% endif %}
+</div>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Inspection Credits{% endblock %}
+{% block header_title %}Inspection Credits{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6 class="mb-0"><i class="bi bi-award me-2"></i>Inspection Credits by Aircraft Engineer</h6>
+  </div>
+  <div class="card-body p-0">
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Aircraft Engineer</th>
+            <th class="text-end">Inspection Credit</th>
+            <th>Activity Credit Breakdown</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r.full_name }}</td>
+            <td class="text-end"><strong>{{ "%.1f"|format(r.inspection_total) }}</strong></td>
+            <td class="small">
+              {% if r.activities %}
+                {% for label, total in r.activities.items() %}
+                  <span class="badge badge-role me-1 mb-1">{{ label }}: {{ "%.1f"|format(total) }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-award' %}
+      {% set title = 'No inspections logged yet.' %}
+      {% set subtitle = 'Aircraft Engineer credit totals will appear here once inspection forms are logged.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Inspection #{{ inspection.id }}{% endblock %}
+{% block header_title %}Inspection #{{ inspection.id }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h5 class="mb-1">Aircraft Engineer Inspection Form #{{ inspection.id }}</h5>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('engineer.list_inspections') }}" class="btn btn-light border btn-sm">Back to List</a>
+    {% if current_user.is_super_admin or inspection.primary_engineer_id == current_user.id %}
+    <a href="{{ url_for('engineer.edit_inspection', inspection_id=inspection.id) }}" class="btn btn-outline-pia btn-sm"><i class="bi bi-pencil me-1"></i>Edit</a>
+    <form method="POST" action="{{ url_for('engineer.delete_inspection', inspection_id=inspection.id) }}" data-confirm="Delete this inspection? This cannot be undone.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-info-circle me-2"></i>General</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><div class="small text-muted">Date</div><div>{{ inspection.inspection_date | date_fmt }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Station</div><div>{{ inspection.station.name if inspection.station else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Shift</div><div>{{ inspection.shift.name.label if inspection.shift else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Airline</div><div>{{ inspection.airline.name if inspection.airline else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Aircraft Registration</div><div>{{ inspection.aircraft.registration if inspection.aircraft else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Aircraft Type</div><div>{{ inspection.aircraft.aircraft_type if inspection.aircraft else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Primary Aircraft Engineer</div><div>{{ inspection.primary_engineer.full_name if inspection.primary_engineer else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Second Aircraft Engineer</div><div>{{ inspection.second_engineer.full_name if inspection.second_engineer else '-' }}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-award me-2"></i>Credit Split</h6></div>
+  <div class="card-body">
+    {% if inspection.is_shared %}
+    <p class="mb-0">Shared inspection: <strong>{{ inspection.primary_engineer.full_name }}</strong> — 0.5,
+      <strong>{{ inspection.second_engineer.full_name }}</strong> — 0.5. Each Yes-marked activity below follows the same 0.5 / 0.5 split.</p>
+    {% else %}
+    <p class="mb-0">Solo inspection: <strong>{{ inspection.primary_engineer.full_name if inspection.primary_engineer else '-' }}</strong> receives full credit (1.0), including for every Yes-marked activity below.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-ui-checks me-2"></i>Activity Checklist</h6></div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Performed</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in inspection.entries %}
+          <tr class="{{ 'table-success' if entry.performed else '' }}">
+            <td>{{ entry.activity_type | enum_label }}</td>
+            <td>{{ 'Yes' if entry.performed else 'No' }}</td>
+            <td>{{ entry.remarks or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-chat-left-text me-2"></i>Overall Remarks</h6></div>
+  <div class="card-body">
+    <div>{{ inspection.overall_remarks or '-' }}</div>
+  </div>
+</div>
+
+{% endblock %}

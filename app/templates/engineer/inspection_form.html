@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}{{ 'New Inspection Form' if mode == 'create' else 'Edit Inspection Form' }}{% endblock %}
+{% block header_title %}{{ 'Aircraft Engineer Inspection Form' if mode == 'create' else 'Edit Inspection Form #' + inspection.id|string }}{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-clipboard2-pulse me-2"></i>Aircraft Engineer Inspection Form</h6>
+  </div>
+  <div class="card-body">
+    <form method="POST" novalidate id="inspectionForm">
+      {{ form.hidden_tag() }}
+
+      <h6 class="text-pia-green mb-3"><i class="bi bi-info-circle me-1"></i>General</h6>
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          {{ form.inspection_date.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.inspection_date(class="form-control" + (" is-invalid" if form.inspection_date.errors else "")) }}
+          {% for e in form.inspection_date.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Station</label>
+          <input type="text" class="form-control" value="Lahore" disabled>
+          {{ form.station_id(style="display:none;") }}
+          <div class="form-text">Station is fixed to Lahore for inspection forms.</div>
+        </div>
+        <div class="col-md-3">
+          {{ form.shift_id.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.shift_id(class="form-select" + (" is-invalid" if form.shift_id.errors else "")) }}
+          {% for e in form.shift_id.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+        {% if current_user.is_super_admin %}
+        <div class="col-md-3">
+          {{ form.primary_engineer_id.label(class="form-label") }}
+          {{ form.primary_engineer_id(class="form-select", id="primaryEngineer") }}
+          <div class="form-text">Defaults to you if left unselected.</div>
+        </div>
+        {% else %}
+        {{ form.primary_engineer_id(style="display:none;", id="primaryEngineer") }}
+        {% endif %}
+        <div class="col-md-3">
+          {{ form.second_engineer_id.label(class="form-label") }}
+          {{ form.second_engineer_id(class="form-select", id="secondEngineer") }}
+          <div class="form-text">Optional. Splits credit 0.5 / 0.5 with the primary engineer.</div>
+        </div>
+      </div>
+
+      <h6 class="text-pia-green mb-3"><i class="bi bi-airplane me-1"></i>Aircraft</h6>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          {{ form.airline_id.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.airline_id(class="form-select" + (" is-invalid" if form.airline_id.errors else ""), id="airlineSelect") }}
+          {% for e in form.airline_id.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-4" id="aircraftDropdownWrap">
+          {{ form.aircraft_id.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.aircraft_id(class="form-select" + (" is-invalid" if form.aircraft_id.errors else ""), id="aircraftSelect") }}
+          {% for e in form.aircraft_id.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          <div class="form-text">Choose an airline first to filter registrations.</div>
+        </div>
+        <div class="col-md-4" id="aircraftManualRegWrap" style="display:none;">
+          {{ form.aircraft_registration_manual.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.aircraft_registration_manual(class="form-control" + (" is-invalid" if form.aircraft_registration_manual.errors else "")) }}
+          {% for e in form.aircraft_registration_manual.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-md-4" id="aircraftManualModelWrap" style="display:none;">
+          {{ form.aircraft_model_manual.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.aircraft_model_manual(class="form-select" + (" is-invalid" if form.aircraft_model_manual.errors else ""), id="aircraftModelManualSelect") }}
+          {% for e in form.aircraft_model_manual.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <h6 class="text-pia-green mb-3"><i class="bi bi-ui-checks me-1"></i>Activity</h6>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          {{ form.activity_type.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.activity_type(class="form-select" + (" is-invalid" if form.activity_type.errors else "")) }}
+          {% for e in form.activity_type.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <h6 class="text-pia-green mb-3"><i class="bi bi-chat-left-text me-1"></i>Remarks</h6>
+      <div class="row g-3 mb-4">
+        <div class="col-md-12">
+          {{ form.overall_remarks(class="form-control", rows="3", placeholder="Enter remarks...") }}
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{{ url_for('engineer.list_inspections') }}" class="btn btn-light border">Cancel</a>
+        {{ form.submit(class="btn btn-pia-gold") }}
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  var airlineSelect = document.getElementById("airlineSelect");
+  var aircraftSelect = document.getElementById("aircraftSelect");
+  var aircraftDropdownWrap = document.getElementById("aircraftDropdownWrap");
+  var aircraftManualRegWrap = document.getElementById("aircraftManualRegWrap");
+  var aircraftManualModelWrap = document.getElementById("aircraftManualModelWrap");
+  var aircraftRegManualInput = document.getElementById("{{ form.aircraft_registration_manual.id }}");
+  var aircraftModelManualSelect = document.getElementById("aircraftModelManualSelect");
+  var primaryEngineer = document.getElementById("primaryEngineer");
+  var secondEngineerSelect = document.getElementById("secondEngineer");
+  var currentAircraftId = "{{ form.aircraft_id.data or '' }}";
+  var lastAircraftList = [];
+
+  // ---- Airline -> PIA dropdown vs manual entry ----
+  // The actual PIA Airline.id is looked up server-side (never hard-coded,
+  // never inferred from the visible option label) and injected here as a
+  // plain integer via the pia_airline_id template var.
+  var PIA_AIRLINE_ID = "{{ pia_airline_id or '' }}";
+
+  function isPiaSelected() {
+    return !!PIA_AIRLINE_ID && airlineSelect && String(airlineSelect.value) === String(PIA_AIRLINE_ID);
+  }
+
+  function applyAirlineMode() {
+    if (!airlineSelect) return;
+    var pia = isPiaSelected();
+    if (aircraftDropdownWrap) aircraftDropdownWrap.style.display = pia ? "" : "none";
+    if (aircraftManualRegWrap) aircraftManualRegWrap.style.display = pia ? "none" : "";
+    if (aircraftManualModelWrap) aircraftManualModelWrap.style.display = pia ? "none" : "";
+  }
+
+  // Non-PIA Aircraft / Plane Model dropdown (the actual submitted form
+  // field): a fixed list of models, shown for every non-PIA airline. This
+  // intentionally does NOT depend on Aircraft records existing for the
+  // selected airline - it must be populated and selectable immediately,
+  // for any airline, without waiting on/needing the aircraft fetch below.
+  var OTHER_AIRLINE_AIRCRAFT_MODELS = ["A333", "B787", "A320", "B777", "A350", "ATR"];
+
+  function renderManualModelSelect(keepModel) {
+    if (!aircraftModelManualSelect) return;
+    var currentValue = keepModel || aircraftModelManualSelect.value;
+    var seen = {};
+    OTHER_AIRLINE_AIRCRAFT_MODELS.forEach(function (m) { seen[m] = true; });
+    var html = '<option value="">-- Select Aircraft Model --</option>';
+    OTHER_AIRLINE_AIRCRAFT_MODELS.forEach(function (m) {
+      html += '<option value="' + m + '">' + m + '</option>';
+    });
+    // Preserve a value that isn't one of the fixed models (e.g. an
+    // existing inspection's legacy saved model) so it isn't silently
+    // dropped on page load.
+    if (currentValue && !seen[currentValue]) {
+      html += '<option value="' + currentValue + '">' + currentValue + '</option>';
+    }
+    aircraftModelManualSelect.innerHTML = html;
+    if (currentValue) { aircraftModelManualSelect.value = currentValue; }
+  }
+
+  function loadAircraft(preserveSelection) {
+    if (!airlineSelect || !aircraftSelect) return;
+    var airlineId = airlineSelect.value;
+    var keep = preserveSelection ? aircraftSelect.value : "";
+    var keepManualModel = preserveSelection && aircraftModelManualSelect ? aircraftModelManualSelect.value : "";
+    aircraftSelect.disabled = true;
+    fetch("{{ url_for('engineer.inspection_aircraft_options') }}?airline_id=" + encodeURIComponent(airlineId || 0), {
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error("Failed to load aircraft (HTTP " + r.status + ")");
+        return r.json();
+      })
+      .then(function (data) {
+        lastAircraftList = Array.isArray(data) ? data : [];
+        aircraftSelect.innerHTML = "";
+        var placeholder = document.createElement("option");
+        placeholder.value = "0";
+        placeholder.textContent = "-- Select Aircraft --";
+        aircraftSelect.appendChild(placeholder);
+        lastAircraftList.forEach(function (a) {
+          var opt = document.createElement("option");
+          opt.value = a.id;
+          opt.setAttribute("data-model", a.aircraft_type);
+          // Registration is the primary label; the model is shown right
+          // alongside it, so choosing a registration auto-shows its model
+          // with no extra click or separate dropdown needed.
+          opt.textContent = a.registration + " (" + a.aircraft_type + ")";
+          aircraftSelect.appendChild(opt);
+        });
+        if (keep && aircraftSelect.querySelector('option[value="' + keep + '"]')) {
+          aircraftSelect.value = keep;
+        }
+      })
+      .catch(function (err) {
+        console.error("Aircraft dropdown failed to load:", err);
+        aircraftSelect.innerHTML = '<option value="0">-- Could not load aircraft, try again --</option>';
+      })
+      .finally(function () {
+        aircraftSelect.disabled = false;
+      });
+  }
+
+  if (airlineSelect) {
+    airlineSelect.addEventListener("change", function () {
+      var pia = isPiaSelected();
+      applyAirlineMode();
+      if (pia) {
+        // Switching Other -> PIA: clear whatever was typed/selected
+        // manually and load the PIA-scoped dropdown fresh.
+        if (aircraftRegManualInput) aircraftRegManualInput.value = "";
+        if (aircraftModelManualSelect) aircraftModelManualSelect.value = "";
+      } else {
+        // Switching PIA -> Other: clear the stale dropdown selection so it
+        // can never be submitted alongside the manual entry, then populate
+        // the fixed Aircraft/Plane Model dropdown immediately - this must
+        // not wait on (or depend on) the aircraft fetch below.
+        if (aircraftSelect) aircraftSelect.value = "0";
+        renderManualModelSelect("");
+      }
+      loadAircraft(false);
+    });
+    applyAirlineMode();
+    if (!isPiaSelected()) { renderManualModelSelect(); }
+  }
+
+  // On first load (e.g. editing an existing inspection) fetch the aircraft
+  // list for the pre-selected airline so both the PIA Registration
+  // dropdown and the non-PIA Aircraft Model dropdown are populated and
+  // kept in sync with whatever is already selected/saved.
+  if (airlineSelect && airlineSelect.value) {
+    loadAircraft(true);
+  }
+
+  function excludePrimaryFromSecond() {
+    if (!primaryEngineer || !secondEngineerSelect) return;
+    var primaryVal = primaryEngineer.value;
+    Array.prototype.forEach.call(secondEngineerSelect.options, function (opt) {
+      opt.disabled = (opt.value !== "0" && opt.value === primaryVal);
+      if (opt.disabled && opt.selected) { secondEngineerSelect.value = "0"; }
+    });
+  }
+
+  if (primaryEngineer) {
+    primaryEngineer.addEventListener("change", excludePrimaryFromSecond);
+    excludePrimaryFromSecond();
+  }
+})();
+</script>
+
+{% endblock %}

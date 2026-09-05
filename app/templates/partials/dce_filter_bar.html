@@ -1,0 +1,118 @@
+<form method="get" class="card mb-4 dce-filter-bar">
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-6 col-md-2">
+        <label class="form-label small mb-1">Model</label>
+        <select name="model" class="form-select form-select-sm">
+          <option value="">All Models</option>
+          <optgroup label="Aircraft Type">
+            {% for value, label in model_choices.types %}
+            <option value="{{ value }}" {{ 'selected' if filters.model == value }}>{{ label }}</option>
+            {% endfor %}
+          </optgroup>
+          <optgroup label="Aircraft">
+            {% for value, label in model_choices.aircraft %}
+            <option value="{{ value }}" {{ 'selected' if filters.model == value }}>{{ label }}</option>
+            {% endfor %}
+          </optgroup>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label small mb-1">Period</label>
+        <select name="period" class="form-select form-select-sm" onchange="document.getElementById('customRangeWrap').classList.toggle('d-none', this.value !== 'custom')">
+          {% for value, label in [('daily','Daily'), ('weekly','Weekly'), ('monthly','Monthly'), ('custom','Custom Range'), ('all','All Time')] %}
+          <option value="{{ value }}" {{ 'selected' if filters.period == value }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4 {{ 'd-none' if filters.period != 'custom' }}" id="customRangeWrap">
+        <div class="row g-2">
+          <div class="col-6">
+            <label class="form-label small mb-1">From</label>
+            <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filters.date_from.isoformat() if filters.date_from }}">
+          </div>
+          <div class="col-6">
+            <label class="form-label small mb-1">To</label>
+            <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filters.date_to.isoformat() if filters.date_to }}">
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label small mb-1">Station</label>
+        <select name="station_id" class="form-select form-select-sm">
+          <option value="">All Stations</option>
+          {% for s in stations %}
+          <option value="{{ s.id }}" {{ 'selected' if filters.station_id == s.id }}>{{ s.code }} &mdash; {{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label small mb-1">Shift</label>
+        <select name="shift_name" class="form-select form-select-sm">
+          <option value="">All Shifts</option>
+          {% for s in shifts %}
+          <option value="{{ s.value }}" {{ 'selected' if filters.shift_name == s.value }}>{{ s.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label small mb-1">Aircraft Engineer</label>
+        <select name="engineer_id" class="form-select form-select-sm">
+          <option value="">All Aircraft Engineers</option>
+          {% for e in engineers %}
+          <option value="{{ e.id }}" {{ 'selected' if filters.engineer_id == e.id }}>{{ e.full_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2 dce-filter-more">
+        <label class="form-label small mb-1">Aircraft</label>
+        <select name="aircraft_id" class="form-select form-select-sm">
+          <option value="">All Aircraft</option>
+          {% for a in aircraft %}
+          <option value="{{ a.id }}" {{ 'selected' if filters.aircraft_id == a.id }}>{{ a.registration }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2 dce-filter-more">
+        <label class="form-label small mb-1">Airline</label>
+        <select name="airline_id" class="form-select form-select-sm">
+          <option value="">All Airlines</option>
+          {% for al in airlines %}
+          <option value="{{ al.id }}" {{ 'selected' if filters.airline_id == al.id }}>{{ al.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2 dce-filter-more">
+        <label class="form-label small mb-1">Aircraft Type</label>
+        <select name="aircraft_type" class="form-select form-select-sm">
+          <option value="">All Aircraft Types</option>
+          {% for value, label in aircraft_types %}
+          <option value="{{ value }}" {{ 'selected' if filters.aircraft_type == value }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2 dce-filter-more">
+        <label class="form-label small mb-1">Activity Type</label>
+        <select name="activity_type" class="form-select form-select-sm">
+          <option value="">All Types</option>
+          {% for t in activity_types %}
+          <option value="{{ t.value }}" {{ 'selected' if filters.activity_type == t.value }}>{{ t.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2 dce-filter-more">
+        <label class="form-label small mb-1">Status</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">Any Status</option>
+          {% for st in statuses %}
+          <option value="{{ st.value }}" {{ 'selected' if filters.status == st.value }}>{{ st.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-auto d-flex gap-2">
+        <button type="submit" class="btn btn-pia-primary btn-sm"><i class="bi bi-funnel me-1"></i>Apply</button>
+        <a href="{{ request.path }}" class="btn btn-outline-pia btn-sm">Reset</a>
+      </div>
+    </div>
+  </div>
+</form>

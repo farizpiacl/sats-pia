@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Station Summary{% endblock %}
+{% block header_title %}Station Summary{% endblock %}
+{% block content %}
+
+{% include "partials/dce_filter_bar.html" %}
+
+<div class="card">
+  <div class="card-header-pia d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h6 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Station Summary</h6>
+    {% include "partials/dce_export_bar.html" %}
+  </div>
+  <div class="card-body p-0">
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Station</th><th class="text-end">Activities</th><th class="text-end">Aircraft Inspected</th>
+            <th class="text-end">Maintenance Check</th><th class="text-end">TSR</th>
+            <th class="text-end">MIC</th><th class="text-end">Removal/Installation</th><th class="text-end">QARI</th>
+            <th class="text-end">PIREP/Unsched.</th><th class="text-end">CF Removal</th><th class="text-end">CF Added</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><strong>{{ r.station.code }}</strong> — {{ r.station.name }}</td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='daily_activity', station_id=r.station.id, **link_args) }}">{{ r.activities }}</a></td>
+            <td class="text-end">{{ r.aircraft_inspected }}</td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='maintenance_check', station_id=r.station.id, **link_args) }}">{{ r.maintenance_check }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='tsr', station_id=r.station.id, **link_args) }}">{{ r.tsr }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='mic', station_id=r.station.id, **link_args) }}">{{ r.mic }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='replacement', station_id=r.station.id, **link_args) }}">{{ r.replacement }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='quality_ri', station_id=r.station.id, **link_args) }}">{{ r.ri }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='pirep_unscheduled_maintenance', station_id=r.station.id, **link_args) }}">{{ r.unscheduled }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='cf_removal', station_id=r.station.id, **link_args) }}">{{ r.cf_removal }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='cf', station_id=r.station.id, **link_args) }}">{{ r.cf }}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-geo-alt' %}
+      {% set title = 'No data available yet.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

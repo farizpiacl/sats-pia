@@ -1,0 +1,153 @@
+<aside class="sidebar" id="appSidebar">
+  <div class="sidebar-brand">
+    <div class="brand-badge"><img src="{{ url_for('static', filename='img/pia-logo.png') }}" alt="PIA logo"></div>
+    <div class="brand-text">
+      <div class="title">{{ app_name }}</div>
+      <div class="subtitle">{{ org_name }}</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    {% if current_user.is_super_admin %}
+    {# ----------------------------------------------------------------
+       Super Admin (SA) sidebar - intentionally short. Each link below
+       opens a selection page (cards) for its related functions instead
+       of listing every function directly in the sidebar. No routes,
+       functionality, or data were removed - Engineer / DCE / Shift
+       Incharge features are still reachable through Activities /
+       Overview / Reports, and every Master Data / Security page still
+       exists behind Management / Security.
+       ---------------------------------------------------------------- #}
+    <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'dce.overview_menu' }}" href="{{ url_for('dce.overview_menu') }}">
+      <i class="bi bi-bar-chart-line"></i> Overview
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'admin_menu.management_menu' or (request.endpoint and (request.endpoint.startswith('admin_users.') or request.endpoint.startswith('admin_stations.') or request.endpoint.startswith('admin_shifts.') or request.endpoint.startswith('admin_aircraft.') or request.endpoint.startswith('admin_airlines.') or request.endpoint.startswith('admin_categories.'))) }}" href="{{ url_for('admin_menu.management_menu') }}">
+      <i class="bi bi-diagram-3"></i> Management
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint in ('dce.reports_menu', 'dce.stations_report', 'dce.shifts_report', 'dce.engineers_report', 'dce.inspection_credits_report', 'dce.aircraft_report_view', 'dce.flights_report', 'dce.maintenance_report_view', 'dce.other_report_view') }}" href="{{ url_for('dce.reports_menu') }}">
+      <i class="bi bi-file-earmark-bar-graph"></i> Reports
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'dce.activities_menu' }}" href="{{ url_for('dce.activities_menu') }}">
+      <i class="bi bi-grid"></i> Activities
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'admin_menu.security_menu' or (request.endpoint and request.endpoint.startswith('admin_audit.')) }}" href="{{ url_for('admin_menu.security_menu') }}">
+      <i class="bi bi-shield-lock"></i> Security
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'auth.profile' }}" href="{{ url_for('auth.profile') }}">
+      <i class="bi bi-gear"></i> Settings
+    </a>
+    {% elif current_user.is_engineer %}
+    {# ----------------------------------------------------------------
+       Engineer sidebar - deliberately minimal: Dashboard / Activities /
+       Reports / Profile. Every function that used to be a separate
+       sidebar link (per-category activity lists, Log New Activity, New
+       Inspection Form, Inspection Forms, etc.) is still fully reachable
+       - just grouped one click deeper behind the matching hub page
+       (Activities / Reports) instead of being listed flat here.
+       Activities and Inspection are combined into a single "Activities"
+       entry (the old Inspection route still exists and simply redirects
+       into the combined hub, so no link anywhere is left broken). No
+       routes, functionality, or backend logic were removed.
+       ---------------------------------------------------------------- #}
+    <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'engineer.create_activity' }}" href="{{ url_for('engineer.create_activity') }}">
+      <i class="bi bi-plus-square"></i> Add Activity
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint in ('engineer.activities_menu', 'engineer.list_activities', 'engineer.view_activity', 'engineer.edit_activity', 'engineer.inspection_menu', 'engineer.list_inspections', 'engineer.create_inspection', 'engineer.view_inspection', 'engineer.edit_inspection') }}" href="{{ url_for('engineer.activities_menu') }}">
+      <i class="bi bi-grid"></i> Activities
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint in ('engineer.reports_menu', 'engineer.all_activities_menu') }}" href="{{ url_for('engineer.reports_menu') }}">
+      <i class="bi bi-file-earmark-bar-graph"></i> Reports
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'auth.profile' }}" href="{{ url_for('auth.profile') }}">
+      <i class="bi bi-person-gear"></i> Profile
+    </a>
+    {% elif current_user.is_shift_incharge %}
+    {# ----------------------------------------------------------------
+       Shift Incharge sidebar - deliberately minimal: Home / Activities /
+       Inspection / Dashboard / Reports / Profile, grouped one click deep
+       behind the matching hub page (Activities / Inspection / Reports)
+       instead of being listed flat here.
+       ---------------------------------------------------------------- #}
+    <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">
+      <i class="bi bi-house"></i> Home
+    </a>
+    {# ----------------------------------------------------------------
+       Shift Incharge is an Engineer, so this nav grants the same
+       "Add Activity" / "Activities" hub as the Engineer role (Log New
+       Activity, My Activities, Inspection Forms, categories) in
+       addition to a Shift Monitoring page for viewing their shift's
+       activities.
+       ---------------------------------------------------------------- #}
+    <a class="nav-link {{ 'active' if request.endpoint == 'engineer.create_activity' }}" href="{{ url_for('engineer.create_activity') }}">
+      <i class="bi bi-plus-square"></i> Add Activity
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint in ('engineer.activities_menu', 'engineer.list_activities', 'engineer.view_activity', 'engineer.edit_activity', 'engineer.inspection_menu', 'engineer.list_inspections', 'engineer.create_inspection', 'engineer.view_inspection', 'engineer.edit_inspection') }}" href="{{ url_for('engineer.activities_menu') }}">
+      <i class="bi bi-grid"></i> Activities
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'shift_incharge.shift_monitoring' }}" href="{{ url_for('shift_incharge.shift_monitoring') }}">
+      <i class="bi bi-clipboard2-pulse"></i> Shift Monitoring
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'shift_incharge.dashboard' }}" href="{{ url_for('shift_incharge.dashboard') }}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'shift_incharge.reports_menu' }}" href="{{ url_for('shift_incharge.reports_menu') }}">
+      <i class="bi bi-file-earmark-bar-graph"></i> Reports
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'auth.profile' }}" href="{{ url_for('auth.profile') }}">
+      <i class="bi bi-person-gear"></i> Profile
+    </a>
+    {% else %}
+    {% if not current_user.is_dce %}
+    <a class="nav-link {{ 'active' if request.endpoint == 'dashboard.index' }}" href="{{ url_for('dashboard.index') }}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    {% endif %}
+
+    {% if current_user.is_dce %}
+    {# ----------------------------------------------------------------
+       DCE no longer has a separate Dashboard landing page - Overview is
+       the DCE landing page (see auth.login / dashboard.index redirect),
+       so it's listed first here. The old charts/trends page still
+       exists at the same route (dce.dashboard) as "Analytics" for
+       anyone who wants the deeper chart view.
+       ---------------------------------------------------------------- #}
+    <div class="sidebar-section-label">DCE Analytics</div>
+    <a class="nav-link {{ 'active' if request.endpoint == 'dce.overview_menu' }}" href="{{ url_for('dce.overview_menu') }}">
+      <i class="bi bi-bar-chart-line"></i> Overview
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'dce.activities_menu' }}" href="{{ url_for('dce.activities_menu') }}">
+      <i class="bi bi-grid"></i> Activities
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'dce.dashboard' }}" href="{{ url_for('dce.dashboard') }}">
+      <i class="bi bi-graph-up"></i> Analytics
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint in ('dce.reports_menu', 'dce.stations_report', 'dce.shifts_report', 'dce.engineers_report', 'dce.inspection_credits_report', 'dce.aircraft_report_view', 'dce.flights_report', 'dce.maintenance_report_view', 'dce.other_report_view') }}" href="{{ url_for('dce.reports_menu') }}">
+      <i class="bi bi-file-earmark-bar-graph"></i> Reports
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'auth.profile' }}" href="{{ url_for('auth.profile') }}">
+      <i class="bi bi-gear"></i> Settings
+    </a>
+    {% endif %}
+
+    <div class="sidebar-section-label">Account</div>
+    <a class="nav-link {{ 'active' if request.endpoint == 'notifications.list_notifications' }}" href="{{ url_for('notifications.list_notifications') }}">
+      <i class="bi bi-bell"></i> Notifications
+      {% if unread_notification_count %}<span class="badge badge-gold ms-auto">{{ unread_notification_count }}</span>{% endif %}
+    </a>
+    <a class="nav-link {{ 'active' if request.endpoint == 'auth.profile' }}" href="{{ url_for('auth.profile') }}">
+      <i class="bi bi-person-gear"></i> My Profile
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    &copy; {{ current_year if current_year else '' }} {{ org_name }}<br>
+    Station Activity Tracking System
+  </div>
+</aside>

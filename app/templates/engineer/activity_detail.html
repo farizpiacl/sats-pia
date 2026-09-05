@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Activity #{{ activity.id }}{% endblock %}
+{% block header_title %}Activity #{{ activity.id }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h5 class="mb-1">{{ activity.activity_type | enum_label }}</h5>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ next_url or url_for('engineer.list_activities', category=activity.category) }}" class="btn btn-light border btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to List</a>
+    {% if current_user.is_super_admin or activity.logged_by_id == current_user.id %}
+    <a href="{{ url_for('engineer.edit_activity', activity_id=activity.id) }}" class="btn btn-outline-pia btn-sm"><i class="bi bi-pencil me-1"></i>Edit</a>
+    <form method="POST" action="{{ url_for('engineer.delete_activity', activity_id=activity.id) }}" data-confirm="Delete this activity? This cannot be undone.">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-info-circle me-2"></i>General</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><div class="small text-muted">Date</div><div>{{ activity.activity_date | date_fmt }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Station</div><div>{{ activity.station.name if activity.station else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Shift</div><div>{{ activity.shift.name.label if activity.shift else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Aircraft Engineer</div><div>{{ activity.logged_by.full_name if activity.logged_by else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Aircraft</div><div>{{ activity.aircraft.registration if activity.aircraft else (activity.aircraft_registration_manual or '-') }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Aircraft Type</div><div>{{ activity.aircraft.aircraft_type if activity.aircraft else (activity.aircraft_model_manual or '-') }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Airline</div><div>{{ activity.airline.name if activity.airline else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Coverage Type</div><div>{{ activity.coverage_type.label if activity.coverage_type else '-' }}</div></div>
+      {% if activity.coverage_type and activity.coverage_type.value == 'flight' %}
+      <div class="col-md-3"><div class="small text-muted">Destination Station</div><div>{{ activity.destination_station or '-' }}</div></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if activity.category == 'maintenance_check' %}
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-clipboard2-check me-2"></i>{{ activity.activity_type | enum_label }} Details</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><div class="small text-muted">Type</div><div>{{ activity.maintenance_check_type.label if activity.maintenance_check_type else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Remarks</div><div>{{ activity.remarks or '-' }}</div></div>
+      <div class="col-md-6"><div class="small text-muted">Details</div><div>{{ activity.inspection_details or '-' }}</div></div>
+      <div class="col-md-3">
+        <div class="small text-muted">CRS</div>
+        <div>
+          {% if activity.crs_engineer %}
+            <span class="badge badge-approved"><i class="bi bi-patch-check-fill me-1"></i>CRS: {{ activity.crs_engineer.full_name }}</span>
+          {% else %}-{% endif %}
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="small text-muted">Second Aircraft Engineer</div>
+        <div>
+          {% if activity.second_engineer %}
+            <span class="badge badge-role"><i class="bi bi-person-fill me-1"></i>Second Aircraft Engineer: {{ activity.second_engineer.full_name }}</span>
+          {% else %}-{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if activity.category == 'quality' and activity.qari_entries %}
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-patch-check me-2"></i>QARI Entries</h6></div>
+  <div class="card-body">
+    {% for qe in activity.qari_entries %}
+    <div class="row g-3 {% if not loop.last %}mb-3 pb-3 border-bottom{% endif %}">
+      <div class="col-md-3"><div class="small text-muted">Significant / Minor</div><div>{{ qe.severity.label if qe.severity else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">No. of QARI Attempted</div><div>{{ qe.qari_attempted_count if qe.qari_attempted_count is not none else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Status</div><div>{{ qe.status.label if qe.status else '-' }}</div></div>
+      <div class="col-md-12"><div class="small text-muted">Short Description</div><div>{{ qe.short_description or '-' }}</div></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if activity.category == 'pirep_unscheduled' %}
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-wrench-adjustable me-2"></i>PIREP / Unscheduled Maintenance</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><div class="small text-muted">Number Checked</div><div>{{ activity.num_aircraft_checked if activity.num_aircraft_checked is not none else '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Result</div><div>{{ activity.inspection_result or '-' }}</div></div>
+      <div class="col-md-6"><div class="small text-muted">Details</div><div>{{ activity.inspection_details or '-' }}</div></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if activity.category in ('maintenance_check', 'cf', 'cf_removal', 'replacement') %}
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-tools me-2"></i>{{ activity.activity_type | enum_label }}</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><div class="small text-muted">Maintenance Type</div><div>{{ activity.maintenance_type | enum_label }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Component</div><div>{{ activity.component or '-' }}</div></div>
+      <div class="col-md-2"><div class="small text-muted">Start Time</div><div>{{ activity.start_time | time12 }}</div></div>
+      <div class="col-md-2"><div class="small text-muted">End Time</div><div>{{ activity.end_time | time12 }}</div></div>
+      <div class="col-md-2"><div class="small text-muted">Status</div><div><span class="badge {{ activity.maintenance_status | badge_class }}">{{ activity.maintenance_status | enum_label }}</span></div></div>
+      <div class="col-md-12"><div class="small text-muted">Work Description</div><div>{{ activity.maintenance_details or '-' }}</div></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if activity.category == 'tsr' %}
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-exclamation-triangle me-2"></i>TSR</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><div class="small text-muted">TSR Number</div><div>{{ activity.tsr_number or '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Status</div><div><span class="badge {{ activity.tsr_status | badge_class }}">{{ activity.tsr_status | enum_label }}</span></div></div>
+      <div class="col-md-6"><div class="small text-muted">Description</div><div>{{ activity.maintenance_details or activity.inspection_details or '-' }}</div></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if activity.category == 'mic' %}
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-clipboard2-pulse me-2"></i>MIC / Scheduled Maintenance</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-3"><div class="small text-muted">Component / Item</div><div>{{ activity.component or activity.mic_number or '-' }}</div></div>
+      <div class="col-md-3"><div class="small text-muted">Status</div><div><span class="badge {{ activity.mic_status | badge_class }}">{{ activity.mic_status | enum_label }}</span></div></div>
+      <div class="col-md-6"><div class="small text-muted">Description</div><div>{{ activity.maintenance_details or activity.inspection_details or '-' }}</div></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if activity.category == 'quality' %}
+<div class="card mb-3">
+  <div class="card-header-pia"><h6><i class="bi bi-patch-check me-2"></i>QARI</h6></div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4"><div class="small text-muted">Inspection Type</div><div>{{ activity.quality_inspection_type or '-' }}</div></div>
+      <div class="col-md-4"><div class="small text-muted">Status</div><div><span class="badge {{ activity.quality_status | badge_class }}">{{ activity.quality_status | enum_label }}</span></div></div>
+      <div class="col-md-12"><div class="small text-muted">Finding</div><div>{{ activity.quality_finding or '-' }}</div></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header-pia"><h6><i class="bi bi-chat-left-text me-2"></i>Remarks</h6></div>
+  <div class="card-body">
+    <p class="mb-0">{{ activity.remarks or 'No remarks.' }}</p>
+  </div>
+</div>
+
+{% endblock %}

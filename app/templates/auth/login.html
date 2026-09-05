@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block auth_content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-badge"><img src="{{ url_for('static', filename='img/pia-logo.png') }}" alt="PIA logo"></div>
+      <h4>{{ app_full_name }}</h4>
+      <p>{{ org_name }} &mdash; Sign in to continue</p>
+    </div>
+    <div class="auth-body">
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          {{ form.employee_id.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.employee_id(class="form-control" + (" is-invalid" if form.employee_id.errors else ""), placeholder="e.g. PIA-1024", autofocus=true) }}
+          {% for error in form.employee_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password") }}
+          {% for error in form.password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="form-check mb-3">
+          {{ form.remember_me(class="form-check-input") }}
+          {{ form.remember_me.label(class="form-check-label small") }}
+        </div>
+
+        {{ form.submit(class="btn btn-pia-primary w-100 py-2") }}
+      </form>
+    </div>
+  </div>
+  <div class="auth-footer-credit">Developed by Muhammad Fariz- Intern 2026</div>
+</div>
+{% endblock %}

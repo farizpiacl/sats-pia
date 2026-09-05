@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Aircraft Engineer Dashboard{% endblock %}
+{% block header_title %}Aircraft Engineer Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+  <div>
+    <h4 class="mb-1">My Activities</h4>
+    <p class="text-muted mb-0">
+      {% if current_user.is_engineer or current_user.is_shift_incharge %}A live summary of the activities you have logged.
+      {% else %}A live summary of all engineer activities.{% endif %}
+    </p>
+  </div>
+  {% if current_user.is_engineer or current_user.is_shift_incharge or current_user.is_super_admin %}
+  <a href="{{ url_for('engineer.create_activity') }}" class="btn btn-pia-gold">
+    <i class="bi bi-plus-lg me-1"></i>Add New Activity
+  </a>
+  {% endif %}
+</div>
+
+<!-- ==================== Recent Activities ==================== -->
+<div class="card mb-4">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-clock-history me-2"></i>Recent Activities</h6>
+    <a href="{{ url_for('engineer.list_activities') }}" class="btn btn-outline-pia btn-sm">View All</a>
+  </div>
+  <div class="card-body">
+    {% if recent %}
+    <div class="row g-3">
+      {% for a in recent %}
+      <div class="col-sm-6 col-xl-3">
+        <a href="{{ url_for('engineer.view_activity', activity_id=a.id) }}" class="activity-card">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="activity-card-type"><i class="bi bi-clipboard2-pulse me-1"></i>{{ a.activity_type | enum_label }}</span>
+          </div>
+          <div class="activity-card-row"><i class="bi bi-calendar3"></i>{{ a.activity_date | date_fmt }}</div>
+          <div class="activity-card-row"><i class="bi bi-airplane"></i>{{ a.aircraft.registration if a.aircraft else 'N/A' }}</div>
+          <div class="activity-card-row"><i class="bi bi-geo-alt"></i>{{ a.station.code if a.station else 'N/A' }}</div>
+          {% if a.coverage_type and a.coverage_type.value == 'flight' and a.destination_station %}
+          <div class="activity-card-row"><i class="bi bi-airplane-engines"></i>To: {{ a.destination_station }}</div>
+          {% endif %}
+          <div class="activity-card-row"><i class="bi bi-person"></i>{{ a.logged_by.full_name if a.logged_by else 'N/A' }}</div>
+          {% if a.category == 'maintenance_check' and (a.crs_engineer or a.second_engineer) %}
+          <div class="activity-card-row d-flex flex-wrap gap-1 mt-1">
+            {% if a.crs_engineer %}<span class="badge badge-approved">CRS: {{ a.crs_engineer.full_name }}</span>{% endif %}
+            {% if a.second_engineer %}<span class="badge badge-role">Second Aircraft Engineer: {{ a.second_engineer.full_name }}</span>{% endif %}
+          </div>
+          {% endif %}
+          {% if a.remarks %}
+          <div class="activity-card-remarks" title="{{ a.remarks }}"><i class="bi bi-chat-left-text"></i>{{ a.remarks }}</div>
+          {% endif %}
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      {% set icon = 'bi-clipboard-data' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Log your first activity to see it appear here.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+
+<!-- ==================== Summary ==================== -->
+<h5 class="mb-3"><i class="bi bi-bar-chart-steps me-2"></i>Summary</h5>
+
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('engineer.list_activities') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-collection stat-icon"></i>
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">Total Activities</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('engineer.list_inspections') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-clipboard2-pulse stat-icon"></i>
+        <div class="stat-value">{{ stats.inspection_forms_count }}</div>
+        <div class="stat-label">Inspection Forms{% if current_user.is_engineer %} &middot; {{ "%.1f"|format(stats.inspection_credit_total) }} credit{% endif %}</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('engineer.list_activities', category='quality', qari_status='closed') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-patch-check stat-icon"></i>
+        <div class="stat-value">{{ stats.qari_closed.total }}</div>
+        <div class="stat-label">QARI Closed</div>
+        <div class="d-flex justify-content-center gap-3 mt-1">
+          <a href="{{ url_for('engineer.list_activities', category='quality', qari_status='closed', severity='significant') }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Significant: {{ stats.qari_closed.significant }}
+          </a>
+          <a href="{{ url_for('engineer.list_activities', category='quality', qari_status='closed', severity='minor') }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Minor: {{ stats.qari_closed.minor }}
+          </a>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('engineer.list_activities', category='quality') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-123 stat-icon"></i>
+        <div class="stat-value">{{ stats.qari_attempted.total }}</div>
+        <div class="stat-label">QARI Attempted</div>
+        <div class="d-flex justify-content-center gap-3 mt-1">
+          <a href="{{ url_for('engineer.list_activities', category='quality', severity='significant') }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Significant: {{ stats.qari_attempted.significant }}
+          </a>
+          <a href="{{ url_for('engineer.list_activities', category='quality', severity='minor') }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Minor: {{ stats.qari_attempted.minor }}
+          </a>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-grid me-2"></i>Activity Categories</h6>
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      {% for key, cfg in categories.items() %}
+      <div class="col-sm-6 col-lg-4 col-xl-2">
+        <a class="category-tile" href="{{ url_for('engineer.list_activities', category=key) }}">
+          <i class="bi {{ cfg.icon }} cat-icon"></i>
+          <div class="cat-value">{{ stats.categories.get(key, 0) }}</div>
+          <div class="cat-label">{{ cfg.label }}</div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Graphs / Trends ==================== -->
+<h5 class="mb-3"><i class="bi bi-graph-up me-2"></i>Trends &amp; Statistics</h5>
+
+{% macro chart_card(col, title, icon, canvas_id, has_data) %}
+<div class="{{ col }}">
+  <div class="card h-100">
+    <div class="card-header-pia"><h6><i class="bi {{ icon }} me-2"></i>{{ title }}</h6></div>
+    <div class="card-body">
+      {% if has_data %}
+      <canvas id="{{ canvas_id }}" height="200"></canvas>
+      {% else %}
+        {% set icon = 'bi-bar-chart' %}
+        {% set title = 'No data available yet.' %}
+        {% include "partials/empty_state.html" with context %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+<div class="row g-3 mb-3">
+  {{ chart_card('col-lg-8', 'Daily Activity Trend (Last 30 Days)', 'bi-graph-up', 'dailyTrendChart', charts.daily_trend.data | sum > 0) }}
+  {{ chart_card('col-lg-4', 'Activity by Category', 'bi-pie-chart', 'categoryDoughnutChart', charts.category_breakdown.data | sum > 0) }}
+</div>
+
+<div class="row g-3 mb-3">
+  {{ chart_card('col-lg-6', 'Monthly Activity Trend', 'bi-bar-chart-line', 'monthlyTrendChart', charts.monthly_trend.data | sum > 0) }}
+  {{ chart_card('col-lg-6', 'Activity by Category', 'bi-grid', 'categoryChart', charts.category_breakdown.data | sum > 0) }}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const PIA_GREEN = '#0d5c3f';
+const PIA_GOLD = '#e8b93b';
+const PALETTE = ['#0d5c3f', '#e8b93b', '#1f8a5f', '#c0392b', '#2c7fb8', '#8e44ad', '#d35400', '#16a085', '#7f8c8d', '#34495e'];
+
+function mkChart(id, config) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  new Chart(el, config);
+}
+
+mkChart('dailyTrendChart', {
+  type: 'line',
+  data: { labels: {{ charts.daily_trend.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.daily_trend.data | tojson }}, borderColor: PIA_GREEN, backgroundColor: 'rgba(13,92,63,0.12)', fill: true, tension: 0.3 }] },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('categoryDoughnutChart', {
+  type: 'doughnut',
+  data: { labels: {{ charts.category_breakdown.labels | tojson }}, datasets: [{ data: {{ charts.category_breakdown.data | tojson }}, backgroundColor: PALETTE }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+mkChart('monthlyTrendChart', {
+  type: 'bar',
+  data: { labels: {{ charts.monthly_trend.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.monthly_trend.data | tojson }}, backgroundColor: PIA_GOLD, borderRadius: 6 }] },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('categoryChart', {
+  type: 'bar',
+  data: { labels: {{ charts.category_breakdown.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.category_breakdown.data | tojson }}, backgroundColor: PALETTE, borderRadius: 6 }] },
+  options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+</script>
+{% endblock %}

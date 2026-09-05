@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}DCE Dashboard{% endblock %}
+{% block header_title %}DCE Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <h4 class="mb-1">Operational Overview</h4>
+    <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i>Activities are logged directly by Aircraft Engineers and are immediately visible here.</p>
+  </div>
+</div>
+
+{% include "partials/dce_filter_bar.html" %}
+
+<div class="row g-3 mb-2">
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.aircraft_report_view', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-airplane stat-icon"></i><div class="stat-value">{{ kpis.aircraft_inspected }}</div><div class="stat-label">Aircraft Inspected</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="stat-card"><i class="bi bi-building stat-icon"></i><div class="stat-value">{{ kpis.pia_inspections }}</div><div class="stat-label">PIA Inspections</div></div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="stat-card"><i class="bi bi-globe stat-icon"></i><div class="stat-value">{{ kpis.third_party_inspections }}</div><div class="stat-label">Third-Party Inspections</div></div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='maintenance_check', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-clipboard2-check stat-icon"></i><div class="stat-value">{{ kpis.maintenance_check }}</div><div class="stat-label">Maintenance Check</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='tsr', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-exclamation-triangle stat-icon"></i><div class="stat-value">{{ kpis.tsr }}</div><div class="stat-label">TSR</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='mic', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-clipboard2-pulse stat-icon"></i><div class="stat-value">{{ kpis.mic }}</div><div class="stat-label">MIC / Scheduled Maintenance</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='replacement', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-arrow-repeat stat-icon"></i><div class="stat-value">{{ kpis.replacement }}</div><div class="stat-label">Removal/Installation</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='quality_ri', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-patch-check stat-icon"></i><div class="stat-value">{{ kpis.qari }}</div><div class="stat-label">QARI</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='quality_ri', qari_status='closed', **request.args) }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-patch-check stat-icon"></i>
+        <div class="stat-value">{{ kpis.qari_closed }}</div>
+        <div class="stat-label">QARI Closed</div>
+        <div class="d-flex justify-content-center gap-3 mt-1">
+          <a href="{{ url_for('dce.other_report_view', report_key='quality_ri', qari_status='closed', severity='significant', **request.args) }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Significant: {{ kpis.qari_closed_significant }}
+          </a>
+          <a href="{{ url_for('dce.other_report_view', report_key='quality_ri', qari_status='closed', severity='minor', **request.args) }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Minor: {{ kpis.qari_closed_minor }}
+          </a>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='cf_removal', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-dash-circle stat-icon"></i><div class="stat-value">{{ kpis.cf_removal }}</div><div class="stat-label">CF Removal</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='cf', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-arrow-repeat stat-icon"></i><div class="stat-value">{{ kpis.cf }}</div><div class="stat-label">CF Added</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='pirep_unscheduled_maintenance', **request.args) }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-wrench-adjustable stat-icon"></i><div class="stat-value">{{ kpis.pirep_unscheduled }}</div><div class="stat-label">PIREP / Unscheduled Maintenance</div></div>
+    </a>
+  </div>
+</div>
+
+<div class="d-flex justify-content-end gap-2 my-3">
+  <a href="{{ url_for('dce.stations_report', **request.args) }}" class="btn btn-outline-pia btn-sm"><i class="bi bi-geo-alt me-1"></i>Station Summary</a>
+  <a href="{{ url_for('dce.shifts_report', **request.args) }}" class="btn btn-outline-pia btn-sm"><i class="bi bi-clock-history me-1"></i>Shift Summary</a>
+  <a href="{{ url_for('dce.engineers_report', **request.args) }}" class="btn btn-outline-pia btn-sm"><i class="bi bi-person-badge me-1"></i>Aircraft Engineer Performance</a>
+</div>
+
+{% macro chart_card(col, title, icon, canvas_id, has_data) %}
+<div class="{{ col }}">
+  <div class="card h-100">
+    <div class="card-header-pia"><h6><i class="bi {{ icon }} me-2"></i>{{ title }}</h6></div>
+    <div class="card-body">
+      {% if has_data %}
+      <canvas id="{{ canvas_id }}" height="200"></canvas>
+      {% else %}
+        {% set icon = 'bi-bar-chart' %}
+        {% set title = 'No data available yet.' %}
+        {% include "partials/empty_state.html" with context %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+<div class="row g-3 mb-3">
+  {{ chart_card('col-lg-8', 'Daily Activity Trend', 'bi-graph-up', 'dailyTrendChart', charts.daily_trend.data | sum > 0) }}
+  {{ chart_card('col-lg-4', 'Shift Comparison (Alpha/Beta/Charlie/Delta)', 'bi-pie-chart', 'shiftChart', charts.shift_comparison.data | sum > 0) }}
+</div>
+
+<div class="row g-3 mb-3">
+  {{ chart_card('col-lg-6', 'Monthly Activity Trend', 'bi-bar-chart-line', 'monthlyTrendChart', charts.monthly_trend.data | sum > 0) }}
+  {{ chart_card('col-lg-6', 'Inspections by Activity Type', 'bi-list-check', 'activityTypeChart', charts.activity_type_breakdown.data | sum > 0) }}
+</div>
+
+<div class="row g-3 mb-3">
+  {{ chart_card('col-lg-6', 'Aircraft Activity (Top 10)', 'bi-airplane', 'aircraftChart', charts.aircraft_activity.data | sum > 0) }}
+  {{ chart_card('col-lg-6', 'Airline Coverage', 'bi-building', 'airlineChart', charts.airline_coverage.data | sum > 0) }}
+</div>
+
+<div class="row g-3 mb-3">
+  {{ chart_card('col-lg-4', 'PIA / Third Party Inspections', 'bi-globe', 'piaTpChart', charts.pia_vs_third_party.data | sum > 0) }}
+  {{ chart_card('col-lg-4', 'Maintenance Breakdown', 'bi-tools', 'maintBreakdownChart', charts.maintenance_breakdown.data | sum > 0) }}
+  {{ chart_card('col-lg-4', 'Scheduled / Unscheduled / Carry Forward', 'bi-arrow-repeat', 'smcfChart', charts.smcf.data | sum > 0) }}
+</div>
+
+<div class="row g-3 mb-3">
+  {{ chart_card('col-lg-6', 'Aircraft Engineer Performance (Top 10)', 'bi-person-badge', 'engPerfChart', charts.engineer_performance.data | sum > 0) }}
+  {{ chart_card('col-lg-6', 'Quality / RI Trend', 'bi-patch-check', 'qualityTrendChart', charts.quality_ri_trend.data | sum > 0) }}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const PIA_GREEN = '#0d5c3f';
+const PIA_GOLD = '#e8b93b';
+const PALETTE = ['#0d5c3f', '#e8b93b', '#1f8a5f', '#c0392b', '#2c7fb8', '#8e44ad', '#d35400', '#16a085', '#7f8c8d', '#34495e'];
+
+function mkChart(id, config) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  new Chart(el, config);
+}
+
+mkChart('dailyTrendChart', {
+  type: 'line',
+  data: { labels: {{ charts.daily_trend.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.daily_trend.data | tojson }}, borderColor: PIA_GREEN, backgroundColor: 'rgba(13,92,63,0.12)', fill: true, tension: 0.3 }] },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('shiftChart', {
+  type: 'doughnut',
+  data: { labels: {{ charts.shift_comparison.labels | tojson }}, datasets: [{ data: {{ charts.shift_comparison.data | tojson }}, backgroundColor: PALETTE }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+mkChart('monthlyTrendChart', {
+  type: 'bar',
+  data: { labels: {{ charts.monthly_trend.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.monthly_trend.data | tojson }}, backgroundColor: PIA_GOLD, borderRadius: 6 }] },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('activityTypeChart', {
+  type: 'bar',
+  data: { labels: {{ charts.activity_type_breakdown.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.activity_type_breakdown.data | tojson }}, backgroundColor: PALETTE, borderRadius: 6 }] },
+  options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('aircraftChart', {
+  type: 'bar',
+  data: { labels: {{ charts.aircraft_activity.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.aircraft_activity.data | tojson }}, backgroundColor: PALETTE, borderRadius: 6 }] },
+  options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('airlineChart', {
+  type: 'pie',
+  data: { labels: {{ charts.airline_coverage.labels | tojson }}, datasets: [{ data: {{ charts.airline_coverage.data | tojson }}, backgroundColor: PALETTE }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+mkChart('piaTpChart', {
+  type: 'doughnut',
+  data: { labels: {{ charts.pia_vs_third_party.labels | tojson }}, datasets: [{ data: {{ charts.pia_vs_third_party.data | tojson }}, backgroundColor: [PIA_GREEN, PIA_GOLD] }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+mkChart('maintBreakdownChart', {
+  type: 'bar',
+  data: { labels: {{ charts.maintenance_breakdown.labels | tojson }}, datasets: [{ label: 'Count', data: {{ charts.maintenance_breakdown.data | tojson }}, backgroundColor: PALETTE, borderRadius: 6 }] },
+  options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('smcfChart', {
+  type: 'pie',
+  data: { labels: {{ charts.smcf.labels | tojson }}, datasets: [{ data: {{ charts.smcf.data | tojson }}, backgroundColor: [PIA_GREEN, '#c0392b', PIA_GOLD] }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+mkChart('engPerfChart', {
+  type: 'bar',
+  data: { labels: {{ charts.engineer_performance.labels | tojson }}, datasets: [{ label: 'Activities', data: {{ charts.engineer_performance.data | tojson }}, backgroundColor: PIA_GREEN, borderRadius: 6 }] },
+  options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('qualityTrendChart', {
+  type: 'line',
+  data: { labels: {{ charts.quality_ri_trend.labels | tojson }}, datasets: [{ label: 'Quality / RI', data: {{ charts.quality_ri_trend.data | tojson }}, borderColor: PIA_GOLD, backgroundColor: 'rgba(232,185,59,0.15)', fill: true, tension: 0.3 }] },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+</script>
+{% endblock %}

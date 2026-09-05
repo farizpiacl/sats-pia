@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Aircraft' if mode == 'edit' else 'Add Aircraft' }}{% endblock %}
+{% block header_title %}{{ 'Edit Aircraft' if mode == 'edit' else 'Add Aircraft' }}{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-airplane me-2"></i>{{ 'Edit Aircraft' if mode == 'edit' else 'Add New Aircraft' }}</h6>
+    <a href="{{ url_for('admin_aircraft.list_aircraft') }}" class="btn btn-sm btn-light"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  </div>
+  <div class="card-body p-4">
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="row g-3">
+        <div class="col-md-6">
+          {{ form.registration.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.registration(class="form-control" + (" is-invalid" if form.registration.errors else ""), placeholder="e.g. AP-BHV") }}
+          {% for error in form.registration.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.aircraft_type.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.aircraft_type(class="form-control" + (" is-invalid" if form.aircraft_type.errors else ""), placeholder="e.g. Boeing 777-300ER") }}
+          {% for error in form.aircraft_type.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.airline_id.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.airline_id(class="form-select" + (" is-invalid" if form.airline_id.errors else ""), id="aircraftAirlineSelect") }}
+          {% for error in form.airline_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+          <div class="form-text" id="airlineHelpText"></div>
+        </div>
+        <div class="col-md-6">
+          {{ form.category.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else ""), id="aircraftCategorySelect") }}
+          {% for error in form.category.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6 d-flex align-items-center">
+          <div class="form-check mt-4">
+            {{ form.is_active(class="form-check-input") }}
+            {{ form.is_active.label(class="form-check-label") }}
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <div class="d-flex gap-2">
+        {{ form.submit(class="btn btn-pia-primary px-4") }}
+        <a href="{{ url_for('admin_aircraft.list_aircraft') }}" class="btn btn-light border">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  // Keeps the Airline dropdown consistent with the selected Category:
+  // PIA aircraft may only be linked to the real PIA airline; a Third
+  // Party aircraft may never be linked to PIA. The PIA Airline.id is
+  // looked up server-side (never hard-coded / never inferred from the
+  // visible option label) and injected as a plain integer.
+  var PIA_AIRLINE_ID = "{{ pia_airline_id or '' }}";
+  var categorySelect = document.getElementById("aircraftCategorySelect");
+  var airlineSelect = document.getElementById("aircraftAirlineSelect");
+  var helpText = document.getElementById("airlineHelpText");
+  if (!categorySelect || !airlineSelect) return;
+
+  // Snapshot of every real airline option, taken once from the
+  // server-rendered (DB-backed) <select> so re-filtering never needs a
+  // second round trip and never invents an airline.
+  var allOptions = Array.prototype.map.call(airlineSelect.options, function (o) {
+    return { value: o.value, text: o.text, selected: o.selected };
+  });
+
+  function applyCategoryFilter() {
+    var isThirdParty = categorySelect.value === "third_party";
+    var keepValue = airlineSelect.value;
+    var html = "";
+    allOptions.forEach(function (o) {
+      var isPia = !!PIA_AIRLINE_ID && String(o.value) === String(PIA_AIRLINE_ID);
+      if (isThirdParty && isPia) return; // PIA never appears for Third Party aircraft
+      if (!isThirdParty && PIA_AIRLINE_ID && !isPia) return; // only PIA appears for PIA aircraft
+      html += '<option value="' + o.value + '">' + o.text + '</option>';
+    });
+    airlineSelect.innerHTML = html;
+    if (airlineSelect.querySelector('option[value="' + keepValue + '"]')) {
+      airlineSelect.value = keepValue;
+    }
+    helpText.textContent = isThirdParty
+      ? "PIA is excluded here - Third Party aircraft cannot be linked to PIA."
+      : "Only the PIA airline can be linked to a PIA-category aircraft.";
+  }
+
+  categorySelect.addEventListener("change", applyCategoryFilter);
+  applyCategoryFilter();
+})();
+</script>
+{% endblock %}

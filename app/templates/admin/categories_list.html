@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ group.label }}{% endblock %}
+{% block header_title %}{{ group.label }}{% endblock %}
+{% block content %}
+
+<ul class="nav nav-tabs mb-3">
+  {% for g in all_groups %}
+  <li class="nav-item">
+    <a class="nav-link {{ 'active' if g == group }}" href="{{ url_for('admin_categories.list_categories', group_key=g.value) }}">{{ g.label }}</a>
+  </li>
+  {% endfor %}
+</ul>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small mb-1">Status</label>
+        <select name="status" class="form-select" data-auto-submit>
+          <option value="">All</option>
+          <option value="active" {{ 'selected' if status_filter == 'active' }}>Active</option>
+          <option value="disabled" {{ 'selected' if status_filter == 'disabled' }}>Disabled</option>
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-tags me-2"></i>{{ group.label }}</h6>
+    <a href="{{ url_for('admin_categories.create_category', group_key=group_key) }}" class="btn btn-pia-gold btn-sm"><i class="bi bi-plus-lg me-1"></i>Add</a>
+  </div>
+  <div class="card-body p-0">
+    {% if items %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td class="fw-semibold">{{ item.name }}</td>
+            <td class="small">{{ item.description or '-' }}</td>
+            <td>
+              {% if item.is_active %}<span class="badge badge-active">Active</span>{% else %}<span class="badge badge-disabled">Disabled</span>{% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('admin_categories.edit_category', group_key=group_key, item_id=item.id) }}" class="btn btn-sm btn-outline-pia"><i class="bi bi-pencil"></i></a>
+              <form method="POST" action="{{ url_for('admin_categories.toggle_status', group_key=group_key, item_id=item.id) }}" class="d-inline" data-confirm="Are you sure you want to {{ 'disable' if item.is_active else 'enable' }} '{{ item.name }}'?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if item.is_active else 'btn-outline-success' }}">
+                  <i class="bi {{ 'bi-slash-circle' if item.is_active else 'bi-check-circle' }}"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-tags' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Add the first ' + group.label + ' item to get started.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

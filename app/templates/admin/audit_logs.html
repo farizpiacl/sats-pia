@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block header_title %}Audit Logs{% endblock %}
+{% block content %}
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small mb-1">Action</label>
+        <select name="action" class="form-select" data-auto-submit>
+          <option value="">All actions</option>
+          {% for a in action_choices %}
+          <option value="{{ a }}" {{ 'selected' if filters.action == a }}>{{ a.replace('_', ' ').title() }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small mb-1">User</label>
+        <select name="user_id" class="form-select" data-auto-submit>
+          <option value="">All users</option>
+          {% for u in users %}
+          <option value="{{ u.id }}" {{ 'selected' if filters.user_id == u.id|string }}>{{ u.full_name }} ({{ u.employee_id }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">From</label>
+        <input type="date" name="date_from" value="{{ filters.date_from }}" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">To</label>
+        <input type="date" name="date_to" value="{{ filters.date_to }}" class="form-control">
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-pia flex-fill"><i class="bi bi-search"></i></button>
+        <a href="{{ url_for('admin_audit.list_logs') }}" class="btn btn-light border flex-fill"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-journal-text me-2"></i>Audit Trail</h6>
+    <span class="badge badge-role">{{ pagination.total }} record{{ 's' if pagination.total != 1 }}</span>
+  </div>
+  <div class="card-body p-0">
+    {% if logs %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Description</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td class="small text-nowrap">{{ log.created_at.strftime('%d %b %Y %H:%M') }}</td>
+            <td class="small">{{ log.user.full_name if log.user else 'System / Unknown' }}</td>
+            <td><span class="badge badge-role">{{ log.action.replace('_', ' ').title() }}</span></td>
+            <td class="small">{{ log.entity_type or '-' }}{% if log.entity_id %} #{{ log.entity_id }}{% endif %}</td>
+            <td class="small">{{ log.description or '-' }}</td>
+            <td class="small">{{ log.ip_address or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="pagination-wrap p-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+            <a class="page-link" href="{{ url_for('admin_audit.list_logs', action=filters.action, user_id=filters.user_id, date_from=filters.date_from, date_to=filters.date_to, page=pagination.prev_num) }}">Previous</a>
+          </li>
+          {% for p in pagination.iter_pages() %}
+            {% if p %}
+              <li class="page-item {{ 'active' if p == pagination.page }}">
+                <a class="page-link" href="{{ url_for('admin_audit.list_logs', action=filters.action, user_id=filters.user_id, date_from=filters.date_from, date_to=filters.date_to, page=p) }}">{{ p }}</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+            <a class="page-link" href="{{ url_for('admin_audit.list_logs', action=filters.action, user_id=filters.user_id, date_from=filters.date_from, date_to=filters.date_to, page=pagination.next_num) }}">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+    {% else %}
+      {% set icon = 'bi-journal-text' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Audit events will appear here as users interact with the system.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

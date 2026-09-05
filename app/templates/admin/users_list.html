@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block header_title %}Users / Employees{% endblock %}
+{% block content %}
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small mb-1">Search</label>
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Name, Employee ID, or Email">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small mb-1">Role</label>
+        <select name="role" class="form-select" data-auto-submit>
+          <option value="">All Roles</option>
+          {% for r in roles %}
+          <option value="{{ r.value }}" {{ 'selected' if role_filter == r.value }}>{{ r.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small mb-1">Status</label>
+        <select name="status" class="form-select" data-auto-submit>
+          <option value="">All</option>
+          <option value="active" {{ 'selected' if status_filter == 'active' }}>Active</option>
+          <option value="disabled" {{ 'selected' if status_filter == 'disabled' }}>Disabled</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-pia flex-fill"><i class="bi bi-search"></i></button>
+        <a href="{{ url_for('admin_users.list_users') }}" class="btn btn-light border flex-fill"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-people me-2"></i>Users / Employees</h6>
+    <a href="{{ url_for('admin_users.create_user') }}" class="btn btn-pia-gold btn-sm"><i class="bi bi-plus-lg me-1"></i>Add User</a>
+  </div>
+  <div class="card-body p-0">
+    {% if users %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Employee ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Station</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="fw-semibold">{{ u.employee_id }}</td>
+            <td>{{ u.full_name }}</td>
+            <td class="small">{{ u.email }}</td>
+            <td><span class="badge badge-role">{{ u.role | role_label }}</span></td>
+            <td class="small">{{ u.station.name if u.station else '-' }}</td>
+            <td>
+              {% if u.is_active %}<span class="badge badge-active">Active</span>{% else %}<span class="badge badge-disabled">Disabled</span>{% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{{ url_for('admin_users.edit_user', user_id=u.id) }}" class="btn btn-sm btn-outline-pia" title="Edit"><i class="bi bi-pencil"></i></a>
+              <a href="{{ url_for('admin_users.reset_password', user_id=u.id) }}" class="btn btn-sm btn-outline-pia" title="Reset Password"><i class="bi bi-key"></i></a>
+              {% if u.id != current_user.id %}
+              <form method="POST" action="{{ url_for('admin_users.toggle_status', user_id=u.id) }}" class="d-inline" data-confirm="Are you sure you want to {{ 'disable' if u.is_active else 'enable' }} {{ u.full_name }}?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if u.is_active else 'btn-outline-success' }}">
+                  <i class="bi {{ 'bi-slash-circle' if u.is_active else 'bi-check-circle' }}"></i>
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-people' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Add the first employee to get started.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
