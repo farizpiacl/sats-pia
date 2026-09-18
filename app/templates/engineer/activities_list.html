@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}{{ category_cfg.label if category_cfg else 'My Activities' }}{% endblock %}
+{% block header_title %}{{ category_cfg.label if category_cfg else 'My Activities' }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div class="d-flex flex-wrap gap-2">
+    <a href="{{ url_for('engineer.list_activities') }}" class="btn btn-sm {{ 'btn-pia-primary' if not category else 'btn-light border' }}">All</a>
+    {% for key, cfg in categories.items() %}
+    <a href="{{ url_for('engineer.list_activities', category=key) }}" class="btn btn-sm {{ 'btn-pia-primary' if category == key else 'btn-light border' }}">{{ cfg.label }}</a>
+    {% endfor %}
+  </div>
+  {% if current_user.is_engineer or current_user.is_shift_incharge %}
+  <a href="{{ url_for('engineer.create_activity') }}" class="btn btn-pia-gold btn-sm"><i class="bi bi-plus-lg me-1"></i>Log New Activity</a>
+  {% endif %}
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="GET" class="row g-2 align-items-end">
+      {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+      <div class="col-md-3">
+        <label class="form-label small mb-1">Search</label>
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Aircraft, station, engineer, ref #...">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">From</label>
+        <input type="date" name="date_from" value="{{ date_from }}" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">To</label>
+        <input type="date" name="date_to" value="{{ date_to }}" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Shift</label>
+        <select name="shift_id" class="form-select" data-auto-submit>
+          <option value="">All</option>
+          {% for sh in shifts %}
+          <option value="{{ sh.id }}" {{ 'selected' if shift_filter == sh.id|string }}>{{ sh.name.label }} ({{ sh.station.code }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Aircraft Type</label>
+        <select name="aircraft_type" class="form-select" data-auto-submit>
+          <option value="">All</option>
+          {% for value, label in aircraft_types %}
+          <option value="{{ value }}" {{ 'selected' if aircraft_type == value }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Sort</label>
+        <select name="sort" class="form-select" data-auto-submit>
+          <option value="date_desc" {{ 'selected' if sort == 'date_desc' }}>Date (Newest)</option>
+          <option value="date_asc" {{ 'selected' if sort == 'date_asc' }}>Date (Oldest)</option>
+          <option value="created_desc" {{ 'selected' if sort == 'created_desc' }}>Recently Logged</option>
+          <option value="status" {{ 'selected' if sort == 'status' }}>Status</option>
+        </select>
+      </div>
+      <div class="col-md-1 d-flex gap-2">
+        <button type="submit" class="btn btn-outline-pia flex-fill"><i class="bi bi-search"></i></button>
+        <a href="{{ url_for('engineer.list_activities', category=category) }}" class="btn btn-light border flex-fill"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi {{ category_cfg.icon if category_cfg else 'bi-journal-text' }} me-2"></i>{{ category_cfg.label if category_cfg else 'My Activities' }}</h6>
+    <span class="badge badge-role">{{ pagination.total }} record{{ 's' if pagination.total != 1 }}</span>
+  </div>
+  <div class="card-body p-0">
+    {% if activities %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Aircraft</th>
+            <th>Aircraft Type</th>
+            <th>Airline</th>
+            <th>Station</th>
+            <th>Destination</th>
+            <th>Shift</th>
+            {% if not (current_user.is_engineer or current_user.is_shift_incharge) %}<th>Aircraft Engineer</th>{% endif %}
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in activities %}
+          <tr>
+            <td class="small">{{ a.activity_date | date_fmt }}</td>
+            <td class="small">{{ a.activity_type | enum_label }}</td>
+            <td class="small">{{ a.aircraft.registration if a.aircraft else (a.aircraft_registration_manual or '-') }}</td>
+            <td class="small">{{ a.aircraft.aircraft_type if a.aircraft else (a.aircraft_model_manual or '-') }}</td>
+            <td class="small">{{ (a.aircraft.airline.name if a.aircraft and a.aircraft.airline else None) or (a.airline.name if a.airline else '-') }}</td>
+            <td class="small">{{ a.station.code if a.station else '-' }}</td>
+            <td class="small">{{ a.destination_station or '-' }}</td>
+            <td class="small">{{ a.shift.name.label if a.shift else '-' }}</td>
+            {% if not (current_user.is_engineer or current_user.is_shift_incharge) %}
+            <td class="small">
+              {% if a.crs_engineer or a.second_engineer %}
+                {% if a.crs_engineer %}<div>CRS: {{ a.crs_engineer.full_name }}</div>{% endif %}
+                {% if a.second_engineer %}<div>Second Aircraft Engineer: {{ a.second_engineer.full_name }}</div>{% endif %}
+              {% else %}
+                {{ a.logged_by.full_name if a.logged_by else '-' }}
+              {% endif %}
+            </td>
+            {% endif %}
+            <td class="text-end">
+              <a href="{{ url_for('engineer.view_activity', activity_id=a.id) }}" class="btn btn-sm btn-outline-pia"><i class="bi bi-eye"></i></a>
+              {% if current_user.is_super_admin or a.logged_by_id == current_user.id %}
+              <a href="{{ url_for('engineer.edit_activity', activity_id=a.id) }}" class="btn btn-sm btn-outline-pia"><i class="bi bi-pencil"></i></a>
+              <form method="POST" action="{{ url_for('engineer.delete_activity', activity_id=a.id) }}" class="d-inline" data-confirm="Delete this activity? This cannot be undone.">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination-wrap p-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+            <a class="page-link" href="{{ url_for('engineer.list_activities', category=category, q=q, status=status_filter, date_from=date_from, date_to=date_to, sort=sort, page=pagination.prev_num) }}">Previous</a>
+          </li>
+          {% for p in pagination.iter_pages() %}
+            {% if p %}
+              <li class="page-item {{ 'active' if p == pagination.page }}">
+                <a class="page-link" href="{{ url_for('engineer.list_activities', category=category, q=q, status=status_filter, date_from=date_from, date_to=date_to, sort=sort, page=p) }}">{{ p }}</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+            <a class="page-link" href="{{ url_for('engineer.list_activities', category=category, q=q, status=status_filter, date_from=date_from, date_to=date_to, sort=sort, page=pagination.next_num) }}">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+      {% set icon = category_cfg.icon if category_cfg else 'bi-journal-text' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Records will appear here once activities are logged.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

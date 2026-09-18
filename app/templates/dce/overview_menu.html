@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "dce/_menu_grid.html" import menu_grid %}
+{% block title %}Overview{% endblock %}
+{% block header_title %}Overview{% endblock %}
+{% block content %}
+
+<div class="mb-3">
+  <h4 class="mb-1"><i class="bi bi-speedometer2 me-2"></i>Overview</h4>
+  <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i>Click any number below to open the matching activities.</p>
+</div>
+
+{% include "partials/dce_filter_bar.html" %}
+
+<!-- Every tile links straight into Activities, pre-filtered to exactly the
+     records that make up its number (e.g. TSR = 5 -> click 5 -> those 5
+     TSRs), carrying over whatever filters are set above. -->
+<div class="row g-3 mb-4">
+  {% for tile in stat_tiles %}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ tile.url }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-clickable">
+        <i class="bi {{ tile.icon }} stat-icon"></i>
+        <div class="stat-value">{{ tile.value }}</div>
+        <div class="stat-label">{{ tile.label }}</div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card mb-4">
+  <div class="card-header-pia d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Aircraft Engineer Summary</h6>
+    <span class="text-muted small">Activity counts by engineer &mdash; click any number to view those activities</span>
+  </div>
+  <div class="card-body p-0">
+    {% if engineer_rows %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Aircraft Engineer</th>
+            <th>Total Activities</th>
+            {% for col in engineer_summary_columns %}
+            <th>{{ col.label }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in engineer_rows %}
+          <tr>
+            <td>{{ row.engineer.full_name }}</td>
+            <td>
+              {% if row.activities %}
+              <a href="{{ row.activities_url }}" class="fw-semibold text-decoration-none">{{ row.activities }}</a>
+              {% else %}0{% endif %}
+            </td>
+            {% for cell in row.cells %}
+            <td>
+              {% if cell.value %}
+              <a href="{{ cell.url }}" class="text-decoration-none">{{ cell.value }}</a>
+              {% else %}0{% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-person-badge' %}
+      {% set title = 'No engineer activity for the selected filters.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="mb-3">
+  <h6 class="mb-1">More Summaries</h6>
+  <p class="text-muted mb-0 small">Jump to a different view.</p>
+</div>
+
+{{ menu_grid(cards) }}
+
+{% endblock %}

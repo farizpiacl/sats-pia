@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+{% block content %}
+
+{% if dashboard_error %}
+<div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+  <i class="bi bi-exclamation-triangle"></i>
+  <div>{{ dashboard_error }}</div>
+</div>
+{% endif %}
+
+<div class="mb-4">
+  <h4 class="mb-1">Welcome, {{ current_user.full_name.split(' ')[0] }}</h4>
+  <p class="text-muted mb-0">{{ current_user.role | role_label }}{% if current_user_station %} &middot; {{ current_user_station.name }}{% endif %}</p>
+</div>
+
+{% if current_user.is_dce %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h5 class="mb-1"><i class="bi bi-grid-3x3-gap me-2"></i>Engineering Activities</h5>
+    <p class="text-muted small mb-0">Last 24 hours across {{ 'all stations' if not stats.selected_station_id else 'the selected station' }}. Click a card to view its full history.</p>
+  </div>
+  <form method="get" class="d-flex align-items-center gap-2">
+    <label class="form-label small mb-0">Station</label>
+    <select name="station_id" class="form-select form-select-sm" data-auto-submit>
+      <option value="">All Stations</option>
+      {% for s in stats.stations %}
+      <option value="{{ s.id }}" {{ 'selected' if stats.selected_station_id == s.id }}>{{ s.code }} &mdash; {{ s.name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+<div class="row g-3 mb-4">
+  {% for card in activity_cards %}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ card.url }}{{ '?station_id=' ~ stats.selected_station_id if stats.selected_station_id }}" class="text-decoration-none text-reset">
+      <div class="stat-card activity-card h-100">
+        <i class="bi {{ card.icon }} stat-icon"></i>
+        <div class="stat-value">{{ card.stats.total }}</div>
+        <div class="stat-label mb-2">{{ card.label }}</div>
+        <div class="small text-muted d-flex flex-wrap gap-2 justify-content-center">
+          <span><i class="bi bi-geo-alt"></i> {{ card.stats.stations }}</span>
+          <span><i class="bi bi-clock-history"></i> {{ card.stats.shifts }}</span>
+          {% if card.stats.aircraft %}<span><i class="bi bi-airplane"></i> {{ card.stats.aircraft }}</span>{% endif %}
+          {% if card.stats.flights %}<span><i class="bi bi-airplane-engines"></i> {{ card.stats.flights }}</span>{% endif %}
+        </div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% elif current_user.is_engineer and engineer_stats %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <i class="bi bi-calendar-check stat-icon"></i>
+      <div class="stat-value">{{ engineer_stats.today }}</div>
+      <div class="stat-label">Today's Activities</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <i class="bi bi-collection stat-icon"></i>
+      <div class="stat-value">{{ engineer_stats.total }}</div>
+      <div class="stat-label">Total Activities</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('engineer.list_flight_coverages') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-airplane-engines stat-icon"></i>
+        <div class="stat-value">{{ engineer_stats.flight_coverages }}</div>
+        <div class="stat-label">Flight Coverages</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>My Activity Breakdown</h5>
+</div>
+<div class="row g-3 mb-4">
+  {% for key, count in engineer_stats.categories.items() %}
+  {% if count %}
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="stat-card h-100">
+      <div class="stat-value">{{ count }}</div>
+      <div class="stat-label">{{ engineer_stats.category_labels[key] }}</div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% elif current_user.is_shift_incharge and si_stats %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <i class="bi bi-calendar-check stat-icon"></i>
+      <div class="stat-value">{{ si_stats.today }}</div>
+      <div class="stat-label">Today's Activities</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <i class="bi bi-collection stat-icon"></i>
+      <div class="stat-value">{{ si_stats.total }}</div>
+      <div class="stat-label">Total Activities</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('engineer.list_flight_coverages') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-airplane-engines stat-icon"></i>
+        <div class="stat-value">{{ si_stats.flight_coverages }}</div>
+        <div class="stat-label">Flight Coverages</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>My Shift's Activity Breakdown</h5>
+  <a href="{{ url_for('shift_incharge.shift_monitoring') }}" class="btn btn-outline-pia btn-sm"><i class="bi bi-arrow-up-right me-1"></i>View All Activities</a>
+</div>
+<div class="row g-3 mb-4">
+  {% for key, count in si_stats.categories.items() %}
+  {% if count %}
+  <div class="col-6 col-md-4 col-xl-3">
+    <div class="stat-card h-100">
+      <div class="stat-value">{{ count }}</div>
+      <div class="stat-label">{{ si_stats.category_labels[key] }}</div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('admin_users.list_users') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-people stat-icon"></i>
+        <div class="stat-value">{{ stats.total_users }}</div>
+        <div class="stat-label">Active Employees</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('dce.other_report_view', report_key='daily_activity', station_id=stats.lahore_station.id) if stats.lahore_station else url_for('admin_stations.list_stations', q='Lahore') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-geo-alt stat-icon"></i>
+        <div class="stat-value">{{ stats.lahore_activities_today }}</div>
+        <div class="stat-label">Lahore Station &middot; Today's Activities</div>
+        <div class="small mt-1" style="color: rgba(255,255,255,0.75);">{{ stats.lahore_activities_total }} total logged</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('admin_aircraft.list_aircraft') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-airplane stat-icon"></i>
+        <div class="stat-value">{{ stats.total_aircraft }}</div>
+        <div class="stat-label">Active Aircraft</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('admin_airlines.list_airlines') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-building stat-icon"></i>
+        <div class="stat-value">{{ stats.total_airlines }}</div>
+        <div class="stat-label">Third-Party Airlines</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <a href="{{ url_for('engineer.list_flight_coverages') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-airplane-engines stat-icon"></i>
+        <div class="stat-value">{{ stats.flight_coverages_total }}</div>
+        <div class="stat-label">Flight Coverages</div>
+      </div>
+    </a>
+  </div>
+</div>
+{% endif %}
+
+{% if current_user.is_super_admin and analytics %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h5 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>Analytics Overview</h5>
+  <a href="{{ url_for('dce.dashboard') }}" class="btn btn-outline-pia btn-sm"><i class="bi bi-arrow-up-right me-1"></i>Full Analytics &amp; Reports</a>
+</div>
+<div class="row g-3 mb-2">
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="stat-card"><i class="bi bi-collection stat-icon"></i><div class="stat-value">{{ stats.total_activities }}</div><div class="stat-label">Total Activities</div></div>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='maintenance_check') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-clipboard2-check stat-icon"></i><div class="stat-value">{{ analytics.kpis.maintenance_check }}</div><div class="stat-label">Maintenance Check</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='mic') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-clipboard2-pulse stat-icon"></i><div class="stat-value">{{ analytics.kpis.mic }}</div><div class="stat-label">MIC / Scheduled Maintenance</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='quality_ri') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-patch-check stat-icon"></i><div class="stat-value">{{ analytics.kpis.qari }}</div><div class="stat-label">QARI</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='tsr') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-exclamation-triangle stat-icon"></i><div class="stat-value">{{ analytics.kpis.tsr }}</div><div class="stat-label">TSR</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='pirep_unscheduled_maintenance') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-wrench-adjustable stat-icon"></i><div class="stat-value">{{ analytics.kpis.pirep_unscheduled }}</div><div class="stat-label">PIREP / Unscheduled Maintenance</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='replacement') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-arrow-repeat stat-icon"></i><div class="stat-value">{{ analytics.kpis.replacement }}</div><div class="stat-label">Removal/Installation</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='cf_removal') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-dash-circle stat-icon"></i><div class="stat-value">{{ analytics.kpis.cf_removal }}</div><div class="stat-label">CF Removal</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='cf') }}" class="text-decoration-none text-reset">
+    <div class="stat-card"><i class="bi bi-arrow-repeat stat-icon"></i><div class="stat-value">{{ analytics.kpis.cf }}</div><div class="stat-label">CF Added</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3 col-xl-2">
+    <div class="stat-card"><i class="bi bi-collection stat-icon"></i><div class="stat-value">{{ analytics.kpis.total_activities }}</div><div class="stat-label">All Activities</div></div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header-pia"><h6><i class="bi bi-clock-history me-2"></i>Shift-wise Activities</h6></div>
+      <div class="card-body">
+        {% if analytics.charts.shift_comparison.data | sum > 0 %}
+        <canvas id="shiftWiseChart" height="220"></canvas>
+        {% else %}
+          {% set icon = 'bi-clock-history' %}{% set title = 'No data available yet.' %}
+          {% include "partials/empty_state.html" with context %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header-pia"><h6><i class="bi bi-airplane me-2"></i>Aircraft Activity (Top 10)</h6></div>
+      <div class="card-body">
+        {% if analytics.charts.aircraft_activity.data | sum > 0 %}
+        <canvas id="aircraftCoverageChart" height="220"></canvas>
+        {% else %}
+          {% set icon = 'bi-airplane' %}{% set title = 'No data available yet.' %}
+          {% include "partials/empty_state.html" with context %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header-pia"><h6><i class="bi bi-graph-up me-2"></i>Monthly Activity Trend</h6></div>
+      <div class="card-body">
+        {% if analytics.charts.monthly_trend.data | sum > 0 %}
+        <canvas id="monthlyTrendChartAdmin" height="90"></canvas>
+        {% else %}
+          {% set icon = 'bi-graph-up' %}{% set title = 'No data available yet.' %}
+          {% include "partials/empty_state.html" with context %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if current_user.is_super_admin %}
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-journal-text me-2"></i>Recent Audit Activity</h6>
+    <span class="badge badge-gold">Developer</span>
+  </div>
+  <div class="card-body p-0">
+    {% if recent_logs %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Entity</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_logs %}
+          <tr>
+            <td class="small">{{ log.created_at | dt }}</td>
+            <td class="small">{{ log.user_full_name or 'System' }}</td>
+            <td><span class="badge badge-role">{{ log.action }}</span></td>
+            <td class="small">{{ log.entity_type or '-' }}{% if log.entity_id %} #{{ log.entity_id }}{% endif %}</td>
+            <td class="small">{{ log.description or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% elif current_user.is_engineer %}
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-clock-history me-2"></i>Recent Activities</h6>
+  </div>
+  <div class="card-body p-0">
+    {% if engineer_recent %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Station / Aircraft</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in engineer_recent %}
+          <tr>
+            <td class="small">{{ a.type_label }}</td>
+            <td class="small">{{ a.station_code }}{% if a.aircraft_registration %} &middot; {{ a.aircraft_registration }}{% endif %}</td>
+            <td class="small">{{ a.activity_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-clipboard-data' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Your logged activities will appear here.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% elif current_user.is_shift_incharge %}
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-clock-history me-2"></i>Recent Activities</h6>
+  </div>
+  <div class="card-body p-0">
+    {% if si_recent %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Station / Aircraft</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in si_recent %}
+          <tr>
+            <td class="small">{{ a.type_label }}</td>
+            <td class="small">{{ a.station_code }}{% if a.aircraft_registration %} &middot; {{ a.aircraft_registration }}{% endif %}</td>
+            <td class="small">{{ a.activity_date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-clipboard-data' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Activities from your shift will appear here.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body">
+    {% set icon = 'bi-clipboard-data' %}
+    {% set title = 'No data available yet.' %}
+    {% set subtitle = 'Station activity records will appear here once logged.' %}
+    {% include "partials/empty_state.html" with context %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+{% if current_user.is_super_admin and analytics %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const PIA_GREEN = '#0d5c3f';
+const PIA_GOLD = '#e8b93b';
+const PALETTE = ['#0d5c3f', '#e8b93b', '#1f8a5f', '#c0392b', '#2c7fb8', '#8e44ad', '#d35400', '#16a085', '#7f8c8d', '#34495e'];
+
+function mkChart(id, config) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  new Chart(el, config);
+}
+
+mkChart('shiftWiseChart', {
+  type: 'bar',
+  data: {
+    labels: {{ analytics.charts.shift_comparison.labels | tojson }},
+    datasets: [{ label: 'Activities', data: {{ analytics.charts.shift_comparison.data | tojson }}, backgroundColor: PALETTE, borderRadius: 6 }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('aircraftCoverageChart', {
+  type: 'bar',
+  data: {
+    labels: {{ analytics.charts.aircraft_activity.labels | tojson }},
+    datasets: [{ label: 'Activities', data: {{ analytics.charts.aircraft_activity.data | tojson }}, backgroundColor: PIA_GREEN, borderRadius: 6 }]
+  },
+  options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+
+mkChart('monthlyTrendChartAdmin', {
+  type: 'line',
+  data: {
+    labels: {{ analytics.charts.monthly_trend.labels | tojson }},
+    datasets: [{ label: 'Activities', data: {{ analytics.charts.monthly_trend.data | tojson }}, borderColor: PIA_GREEN, backgroundColor: 'rgba(13,92,63,0.12)', fill: true, tension: 0.3 }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+});
+</script>
+{% endif %}
+{% endblock %}

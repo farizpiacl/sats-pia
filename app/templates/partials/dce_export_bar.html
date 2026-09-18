@@ -1,0 +1,6 @@
+<div class="d-flex gap-2 flex-wrap no-print">
+  <a class="btn btn-outline-pia btn-sm" href="{{ url_for('dce.export_report', report_key=report_key, fmt='pdf', **request.args) }}"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+  <a class="btn btn-outline-pia btn-sm" href="{{ url_for('dce.export_report', report_key=report_key, fmt='excel', **request.args) }}"><i class="bi bi-file-earmark-excel me-1"></i>Excel</a>
+  <a class="btn btn-outline-pia btn-sm" href="{{ url_for('dce.export_report', report_key=report_key, fmt='csv', **request.args) }}"><i class="bi bi-file-earmark-text me-1"></i>CSV</a>
+  <button type="button" class="btn btn-outline-pia btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print</button>
+</div>

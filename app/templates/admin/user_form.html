@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit User' if mode == 'edit' else 'Add User' }}{% endblock %}
+{% block header_title %}{{ 'Edit User' if mode == 'edit' else 'Add User' }}{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-person-plus me-2"></i>{{ 'Edit User' if mode == 'edit' else 'Add New User' }}</h6>
+    <a href="{{ url_for('admin_users.list_users') }}" class="btn btn-sm btn-light"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  </div>
+  <div class="card-body p-4">
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="row g-3">
+        <div class="col-md-6">
+          {{ form.employee_id.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.employee_id(class="form-control" + (" is-invalid" if form.employee_id.errors else "")) }}
+          {% for error in form.employee_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.full_name.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+          {% for error in form.full_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.email.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+          {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.phone.label(class="form-label") }}
+          {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+          {% for error in form.phone.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.designation.label(class="form-label") }}
+          {{ form.designation(class="form-control" + (" is-invalid" if form.designation.errors else "")) }}
+          {% for error in form.designation.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.role.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+          {% for error in form.role.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.station_id.label(class="form-label") }}
+          {{ form.station_id(class="form-select" + (" is-invalid" if form.station_id.errors else "")) }}
+          {% for error in form.station_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.password.label(class="form-label") }} {% if mode == 'create' %}<span class="required-mark">*</span>{% endif %}
+          {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder=("Leave blank to keep current password" if mode == 'edit' else "")) }}
+          {% for error in form.password.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6 d-flex align-items-center">
+          <div class="form-check mt-4">
+            {{ form.is_active(class="form-check-input") }}
+            {{ form.is_active.label(class="form-check-label") }}
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <div class="d-flex gap-2">
+        {{ form.submit(class="btn btn-pia-primary px-4") }}
+        <a href="{{ url_for('admin_users.list_users') }}" class="btn btn-light border">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

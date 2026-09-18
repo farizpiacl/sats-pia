@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Aircraft Engineer Overview{% endblock %}
+{% block header_title %}Aircraft Engineer Overview{% endblock %}
+{% block content %}
+
+<div class="mb-3">
+  <h4 class="mb-1"><i class="bi bi-person-gear me-2"></i>Aircraft Engineer Overview</h4>
+  <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i>Click any number below to view those engineers or activities.</p>
+</div>
+
+<div class="row g-3 mb-2">
+  <div class="col-6 col-md-4 col-xl-2">
+    <a href="{{ url_for('admin_users.list_users', role='ENGINEER') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-people-fill stat-icon"></i>
+        <div class="stat-value">{{ overview.total_engineers }}</div>
+        <div class="stat-label">Total Aircraft Engineers</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <a href="{{ url_for('admin_users.list_users', role='ENGINEER', status='active') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-person-check stat-icon"></i>
+        <div class="stat-value">{{ overview.active_engineers }}</div>
+        <div class="stat-label">Active Aircraft Engineers</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <a href="{{ url_for('admin_users.list_users', role='ENGINEER', status='disabled') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-person-dash stat-icon"></i>
+        <div class="stat-value">{{ overview.inactive_engineers }}</div>
+        <div class="stat-label">Inactive Aircraft Engineers</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <a href="{{ url_for('dce.other_report_view', report_key='daily_activity') }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-clipboard2-data stat-icon"></i>
+        <div class="stat-value">{{ overview.assigned_tasks }}</div>
+        <div class="stat-label">Assigned Tasks</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card h-100">
+      <i class="bi bi-hourglass-split stat-icon"></i>
+      <div class="stat-value">{{ overview.pending_tasks }}</div>
+      <div class="stat-label">Pending Tasks</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card h-100">
+      <i class="bi bi-check2-circle stat-icon"></i>
+      <div class="stat-value">{{ overview.completed_tasks }}</div>
+      <div class="stat-label">Completed Tasks</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-4">
+    <div class="stat-card h-100">
+      <i class="bi bi-speedometer2 stat-icon"></i>
+      <div class="stat-value">{{ overview.workload }}</div>
+      <div class="stat-label">Avg. Tasks / Active Aircraft Engineer</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-4">
+    <a href="{{ url_for('dce.other_report_view', report_key='daily_activity', station_id=lahore_station.id) if lahore_station else '#' }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-calendar-check stat-icon"></i>
+        <div class="stat-value">{{ overview.lahore_today }}</div>
+        <div class="stat-label">Lahore Activity &middot; Today</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-xl-4">
+    <a href="{{ url_for('dce.other_report_view', report_key='daily_activity', station_id=lahore_station.id) if lahore_station else '#' }}" class="text-decoration-none text-reset">
+      <div class="stat-card stat-card-link h-100">
+        <i class="bi bi-calendar-month stat-icon"></i>
+        <div class="stat-value">{{ overview.lahore_month }}</div>
+        <div class="stat-label">Lahore Activity &middot; This Month</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+{% endblock %}

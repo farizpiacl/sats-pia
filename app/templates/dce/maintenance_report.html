@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Maintenance Report{% endblock %}
+{% block header_title %}Maintenance Report{% endblock %}
+{% block content %}
+
+{% include "partials/dce_filter_bar.html" %}
+
+<div class="card">
+  <div class="card-header-pia d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h6 class="mb-0"><i class="bi bi-tools me-2"></i>Maintenance Report</h6>
+    {% include "partials/dce_export_bar.html" %}
+  </div>
+  <div class="card-body p-0">
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Aircraft</th><th>Type</th><th>Aircraft Engineer</th><th>Shift</th><th>Station</th>
+            <th>Date</th><th>Status</th><th>TSR</th><th>MIC</th><th>RI</th><th>Remarks</th><th class="no-print">View</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in rows %}
+          <tr>
+            <td>{{ a.aircraft.registration if a.aircraft else '-' }}</td>
+            <td>{{ a.maintenance_type | enum_label if a.maintenance_type else '-' }}</td>
+            <td>
+              {% if a.crs_engineer or a.second_engineer %}
+                {% if a.crs_engineer %}<div class="small">CRS: {{ a.crs_engineer.full_name }}</div>{% endif %}
+                {% if a.second_engineer %}<div class="small">Second Aircraft Engineer: {{ a.second_engineer.full_name }}</div>{% endif %}
+              {% else %}
+                {{ a.logged_by.full_name if a.logged_by else '-' }}
+              {% endif %}
+            </td>
+            <td>{{ a.shift.name.label if a.shift else '-' }}</td>
+            <td>{{ a.station.code if a.station else '-' }}</td>
+            <td>{{ a.activity_date | date_fmt }}</td>
+            <td>{% if a.maintenance_status %}<span class="badge {{ a.maintenance_status | badge_class }}">{{ a.maintenance_status | enum_label }}</span>{% else %}-{% endif %}</td>
+            <td>{{ a.tsr_number or '-' }}</td>
+            <td>{{ a.mic_number or '-' }}</td>
+            <td>{{ a.quality_status | enum_label if a.quality_status else '-' }}</td>
+            <td class="small">{{ a.remarks or '-' }}</td>
+            <td class="no-print">
+              <a href="{{ url_for('engineer.view_activity', activity_id=a.id, next=request.full_path) }}" class="btn btn-sm btn-outline-pia" title="View activity"><i class="bi bi-eye"></i></a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-tools' %}
+      {% set title = 'No data available yet.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

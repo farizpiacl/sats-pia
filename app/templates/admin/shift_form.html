@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Shift' if mode == 'edit' else 'Add Shift' }}{% endblock %}
+{% block header_title %}{{ 'Edit Shift' if mode == 'edit' else 'Add Shift' }}{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-clock-history me-2"></i>{{ 'Edit Shift' if mode == 'edit' else 'Add New Shift' }}</h6>
+    <a href="{{ url_for('admin_shifts.list_shifts') }}" class="btn btn-sm btn-light"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  </div>
+  <div class="card-body p-4">
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="row g-3">
+        <div class="col-md-6">
+          {{ form.name.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.name(class="form-select" + (" is-invalid" if form.name.errors else "")) }}
+          {% for error in form.name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.station_id.label(class="form-label") }} <span class="required-mark">*</span>
+          {{ form.station_id(class="form-select" + (" is-invalid" if form.station_id.errors else "")) }}
+          {% for error in form.station_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          {{ form.shift_incharge_id.label(class="form-label") }}
+          {{ form.shift_incharge_id(class="form-select" + (" is-invalid" if form.shift_incharge_id.errors else "")) }}
+          {% for error in form.shift_incharge_id.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+          <div class="form-text">Each shift can have at most one Shift Incharge.</div>
+        </div>
+        <div class="col-md-6 d-flex align-items-center">
+          <div class="form-check mt-4">
+            {{ form.is_active(class="form-check-input") }}
+            {{ form.is_active.label(class="form-check-label") }}
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      <div class="d-flex gap-2">
+        {{ form.submit(class="btn btn-pia-primary px-4") }}
+        <a href="{{ url_for('admin_shifts.list_shifts') }}" class="btn btn-light border">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,695 @@
+/* ============================================================
+   SATS — Station Activity Tracking System
+   PIA Engineering — Dark Green + Gold Theme
+   ============================================================ */
+
+:root {
+  --pia-green-950: #04140f;
+  --pia-green-900: #052e1e;
+  --pia-green-850: #073a26;
+  --pia-green-800: #0a4a30;
+  --pia-green-700: #0e5c3c;
+  --pia-green-600: #147449;
+  --pia-green-100: #e3f3ea;
+
+  --pia-gold-600: #b8892b;
+  --pia-gold-500: #d4a437;
+  --pia-gold-400: #e9c256;
+  --pia-gold-300: #f3d888;
+
+  --pia-ink: #142019;
+  --pia-muted: #5c6d64;
+  --pia-border: #e2e8e1;
+  --pia-bg: #f4f6f4;
+  --pia-card: #ffffff;
+
+  --pia-danger: #b3261e;
+  --pia-success: #1c7c4c;
+  --pia-warning: #9a6a06;
+  --pia-info: #1a5f7a;
+
+  --sidebar-width: 260px;
+  --header-height: 64px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--pia-bg);
+  color: var(--pia-ink);
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+}
+
+a { color: var(--pia-green-700); text-decoration: none; }
+a:hover { color: var(--pia-gold-600); }
+
+/* ---------------- App shell ---------------- */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------------- Sidebar ---------------- */
+
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--pia-green-950) 0%, var(--pia-green-900) 100%);
+  color: #eaf3ee;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1040;
+  transition: transform 0.25s ease;
+  border-right: 3px solid var(--pia-gold-500);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid rgba(212, 164, 55, 0.25);
+}
+
+.sidebar-brand .brand-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.sidebar-brand .brand-badge img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.sidebar-brand .brand-text .title {
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.sidebar-brand .brand-text .subtitle {
+  font-size: 0.68rem;
+  color: var(--pia-gold-300);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.85rem 0.6rem;
+}
+
+.sidebar-section-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(233, 194, 86, 0.65);
+  padding: 0.9rem 0.65rem 0.35rem;
+}
+
+.sidebar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #cfe3d8;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.sidebar-nav .nav-link i {
+  font-size: 1.05rem;
+  width: 20px;
+  text-align: center;
+  color: var(--pia-gold-400);
+}
+
+.sidebar-nav .nav-link:hover {
+  background: rgba(212, 164, 55, 0.12);
+  color: #fff;
+}
+
+.sidebar-nav .nav-link.active {
+  background: linear-gradient(90deg, rgba(212, 164, 55, 0.22), rgba(212, 164, 55, 0.05));
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--pia-gold-500);
+}
+
+.sidebar-footer {
+  padding: 0.85rem 1.1rem 1.1rem;
+  border-top: 1px solid rgba(212, 164, 55, 0.2);
+  font-size: 0.72rem;
+  color: rgba(207, 227, 216, 0.6);
+}
+
+/* ---------------- Main / Header ---------------- */
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  height: var(--header-height);
+  background: var(--pia-card);
+  border-bottom: 1px solid var(--pia-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.header-left { display: flex; align-items: center; gap: 0.9rem; }
+
+.sidebar-toggle-btn {
+  border: none;
+  background: transparent;
+  font-size: 1.35rem;
+  color: var(--pia-green-800);
+  display: none;
+}
+
+.page-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--pia-ink);
+  margin: 0;
+}
+
+.header-right { display: flex; align-items: center; gap: 0.4rem; }
+
+.header-icon-btn {
+  position: relative;
+  border: none;
+  background: transparent;
+  color: var(--pia-green-800);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.header-icon-btn:hover { background: var(--pia-green-100); }
+
+.notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--pia-gold-500);
+  color: var(--pia-green-950);
+  font-size: 0.62rem;
+  font-weight: 700;
+  border-radius: 999px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+.avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pia-green-700), var(--pia-green-900));
+  color: var(--pia-gold-300);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--pia-gold-500);
+  font-size: 0.85rem;
+}
+
+.content-body {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+/* ---------------- Cards / Tables ---------------- */
+
+.card {
+  border: 1px solid var(--pia-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(6, 30, 20, 0.04);
+}
+
+.card-header-pia {
+  background: linear-gradient(90deg, var(--pia-green-900), var(--pia-green-800));
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 0.9rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--pia-gold-500);
+}
+
+.card-header-pia h5, .card-header-pia h6 {
+  margin: 0;
+  color: #fff;
+  font-weight: 600;
+}
+
+.stat-card {
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--pia-green-800), var(--pia-green-950));
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(212,164,55,0.25);
+}
+
+.stat-card-link {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+.stat-card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(6, 30, 20, 0.18);
+  border-color: rgba(233, 194, 86, 0.55);
+}
+
+.stat-card .stat-icon {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  font-size: 2.1rem;
+  color: rgba(233, 194, 86, 0.25);
+}
+
+.stat-card .stat-value {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--pia-gold-300);
+}
+
+.stat-card .stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #d7e6dd;
+}
+
+.stat-card.stat-card-clickable {
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.stat-card.stat-card-clickable:hover,
+.stat-card.stat-card-clickable:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(13, 92, 63, 0.28);
+  border-color: var(--pia-gold-300);
+}
+
+.table-pia thead th {
+  background: var(--pia-green-900);
+  color: #fff;
+  border: none;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table-pia thead th:first-child { border-radius: 8px 0 0 0; }
+.table-pia thead th:last-child { border-radius: 0 8px 0 0; }
+
+.table-pia tbody tr:hover { background: var(--pia-green-100); }
+
+.badge-role {
+  background: var(--pia-green-100);
+  color: var(--pia-green-800);
+  font-weight: 600;
+  border: 1px solid var(--pia-green-700);
+}
+
+.badge-gold {
+  background: linear-gradient(135deg, var(--pia-gold-400), var(--pia-gold-600));
+  color: var(--pia-green-950);
+  font-weight: 700;
+}
+
+.badge-active {
+  background: rgba(28, 124, 76, 0.12);
+  color: var(--pia-success);
+  border: 1px solid rgba(28, 124, 76, 0.35);
+  font-weight: 600;
+}
+
+.badge-disabled {
+  background: rgba(179, 38, 30, 0.1);
+  color: var(--pia-danger);
+  border: 1px solid rgba(179, 38, 30, 0.3);
+  font-weight: 600;
+}
+
+.badge-approved {
+  background: rgba(28, 124, 76, 0.12);
+  color: var(--pia-success);
+  border: 1px solid rgba(28, 124, 76, 0.35);
+  font-weight: 600;
+}
+
+.badge-pending {
+  background: rgba(212, 160, 23, 0.14);
+  color: #8a6200;
+  border: 1px solid rgba(212, 160, 23, 0.4);
+  font-weight: 600;
+}
+
+.badge-rejected {
+  background: rgba(179, 38, 30, 0.1);
+  color: var(--pia-danger);
+  border: 1px solid rgba(179, 38, 30, 0.3);
+  font-weight: 600;
+}
+
+.stat-card.stat-card-sm .stat-value { font-size: 1.5rem; }
+.stat-card.stat-card-sm .stat-icon { font-size: 1.4rem; }
+.category-tile {
+  display: block;
+  border: 1px solid var(--pia-green-100, #e2e8e4);
+  border-radius: 10px;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.category-tile:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); transform: translateY(-2px); color: inherit; }
+.category-tile .cat-icon { font-size: 1.6rem; color: var(--pia-green-800); }
+.category-tile .cat-value { font-size: 1.6rem; font-weight: 700; }
+.category-tile .cat-label { font-size: 0.82rem; color: #6b7280; }
+
+/* ---------------- Recent Activity cards (Engineer Dashboard) ---------------- */
+
+.activity-card {
+  display: block;
+  border: 1px solid var(--pia-green-100, #e2e8e4);
+  border-radius: 10px;
+  padding: 0.95rem 1.05rem;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  background: #fff;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.activity-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.08); transform: translateY(-2px); color: inherit; }
+.activity-card-type { font-weight: 600; font-size: 0.86rem; color: var(--pia-green-800); }
+.activity-card-row {
+  font-size: 0.8rem;
+  color: #4b5563;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.activity-card-row i { color: var(--pia-green-700); font-size: 0.85rem; }
+.activity-card-remarks {
+  font-size: 0.76rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--pia-green-100, #e2e8e4);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.activity-card-remarks i { margin-right: 0.3rem; color: var(--pia-green-700); }
+
+/* ---------------- Menu tiles (DCE navigation hub pages) ---------------- */
+
+.menu-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  border: 1px solid var(--pia-green-100, #e2e8e4);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  background: #fff;
+  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+.menu-tile:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.09);
+  transform: translateY(-2px);
+  border-color: var(--pia-gold-500);
+  color: inherit;
+}
+.menu-tile .menu-tile-icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.4rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--pia-green-700), var(--pia-green-900));
+}
+.menu-tile .menu-tile-title {
+  font-weight: 600;
+  color: var(--pia-green-950, #10221a);
+  margin-bottom: 0.15rem;
+}
+.menu-tile .menu-tile-desc {
+  font-size: 0.82rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+.menu-tile .menu-tile-arrow {
+  margin-left: auto;
+  align-self: center;
+  color: #b8c2bd;
+}
+
+/* ---------------- Buttons ---------------- */
+
+.btn-pia-primary {
+  background: linear-gradient(135deg, var(--pia-green-700), var(--pia-green-900));
+  border: 1px solid var(--pia-green-900);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-pia-primary:hover { background: var(--pia-green-800); color: #fff; }
+
+.btn-pia-gold {
+  background: linear-gradient(135deg, var(--pia-gold-400), var(--pia-gold-600));
+  border: 1px solid var(--pia-gold-600);
+  color: var(--pia-green-950);
+  font-weight: 700;
+}
+.btn-pia-gold:hover { filter: brightness(1.05); color: var(--pia-green-950); }
+
+.btn-outline-pia {
+  border: 1px solid var(--pia-green-700);
+  color: var(--pia-green-800);
+  background: transparent;
+  font-weight: 600;
+}
+.btn-outline-pia:hover { background: var(--pia-green-800); color: #fff; }
+
+/* .btn-outline-pia (and any icon inside it, e.g. the PDF/Excel/CSV/Print
+   export buttons) is styled for a light background. Several places -
+   the export bar included - sit inside .card-header-pia, whose dark
+   green gradient made the dark-green text/border almost invisible.
+   Re-theme it to a light outline whenever it's on that dark surface. */
+.card-header-pia .btn-outline-pia {
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+.card-header-pia .btn-outline-pia i { color: inherit; }
+.card-header-pia .btn-outline-pia:hover,
+.card-header-pia .btn-outline-pia:focus {
+  background: #fff;
+  border-color: #fff;
+  color: var(--pia-green-900);
+}
+
+/* ---------------- Forms ---------------- */
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--pia-green-600);
+  box-shadow: 0 0 0 0.2rem rgba(20, 116, 73, 0.18);
+}
+
+.form-label { font-weight: 600; font-size: 0.86rem; color: var(--pia-ink); }
+
+.required-mark { color: var(--pia-danger); }
+
+/* ---------------- Empty state ---------------- */
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--pia-muted);
+}
+
+.empty-state i {
+  font-size: 2.6rem;
+  color: var(--pia-gold-500);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.empty-state h6 {
+  color: var(--pia-ink);
+  font-weight: 600;
+}
+
+/* ---------------- Auth / Login page ---------------- */
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top left, var(--pia-green-800), var(--pia-green-950) 65%);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.auth-footer-credit {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 1rem;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.02em;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--pia-card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  border-top: 5px solid var(--pia-gold-500);
+}
+
+.auth-card .auth-header {
+  background: linear-gradient(135deg, var(--pia-green-900), var(--pia-green-950));
+  padding: 2rem 1.75rem 1.5rem;
+  text-align: center;
+}
+
+.auth-card .auth-badge {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 0.85rem;
+  border-radius: 16px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.auth-card .auth-badge img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.auth-card .auth-header h4 { color: #fff; font-weight: 700; margin-bottom: 0.15rem; }
+.auth-card .auth-header p { color: var(--pia-gold-300); font-size: 0.82rem; margin: 0; }
+
+.auth-card .auth-body { padding: 1.75rem; }
+
+/* ---------------- Error pages ---------------- */
+
+.error-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pia-bg);
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.error-page .error-code {
+  font-size: 5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--pia-green-800), var(--pia-gold-600));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+}
+
+/* ---------------- Misc ---------------- */
+
+.text-pia-gold { color: var(--pia-gold-600); }
+.text-pia-green { color: var(--pia-green-800); }
+
+.pagination-wrap { display: flex; justify-content: flex-end; margin-top: 1rem; }
+
+@media (max-width: 991.98px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.show { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .sidebar-toggle-btn { display: flex; align-items: center; }
+}
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 20, 15, 0.55);
+  z-index: 1035;
+}
+.sidebar-backdrop.show { display: block; }
+
+/* Module 4 — Print styles for DCE reports */
+@media print {
+  .sidebar, .app-header, .no-print, .dce-filter-bar, .sidebar-backdrop {
+    display: none !important;
+  }
+  .main-content { margin: 0 !important; width: 100% !important; }
+  .content-body { padding: 0 !important; }
+  .card { border: 1px solid #ccc !important; box-shadow: none !important; }
+  body { background: #fff !important; }
+}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Aircraft Engineer Performance{% endblock %}
+{% block header_title %}Aircraft Engineer Performance{% endblock %}
+{% block content %}
+
+{% include "partials/dce_filter_bar.html" %}
+
+<div class="card">
+  <div class="card-header-pia d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h6 class="mb-0"><i class="bi bi-person-badge me-2"></i>Aircraft Engineer Performance</h6>
+    {% include "partials/dce_export_bar.html" %}
+  </div>
+  <div class="card-body p-0">
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Aircraft Engineer</th><th>Station</th><th class="text-end">Activities</th>
+            <th class="text-end">Maintenance Check</th><th class="text-end">TSR</th>
+            <th class="text-end">MIC</th><th class="text-end">Removal/Installation</th><th class="text-end">QARI</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r.engineer.full_name }} <span class="text-muted small">({{ r.engineer.employee_id }})</span></td>
+            <td>{{ r.engineer.station.code if r.engineer.station else '-' }}</td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='daily_activity', engineer_id=r.engineer.id, **link_args) }}">{{ r.activities }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='maintenance_check', engineer_id=r.engineer.id, **link_args) }}">{{ r.maintenance_check }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='tsr', engineer_id=r.engineer.id, **link_args) }}">{{ r.tsr }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='mic', engineer_id=r.engineer.id, **link_args) }}">{{ r.mic }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='replacement', engineer_id=r.engineer.id, **link_args) }}">{{ r.replacement }}</a></td>
+            <td class="text-end"><a href="{{ url_for('dce.other_report_view', report_key='quality_ri', engineer_id=r.engineer.id, **link_args) }}">{{ r.ri }}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-person-badge' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'No engineer has logged activity for the selected filters.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

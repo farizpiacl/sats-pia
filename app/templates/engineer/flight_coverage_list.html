@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Flight Coverages{% endblock %}
+{% block header_title %}Flight Coverages{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h4 class="mb-1"><i class="bi bi-airplane-engines me-2"></i>Flight Coverages</h4>
+    <p class="text-muted mb-0 small">
+      {% if current_user.is_engineer or current_user.is_shift_incharge %}Flight Coverages you have logged.
+      {% else %}Flight Coverages logged across the organization.{% endif %}
+    </p>
+  </div>
+  {% if current_user.is_engineer or current_user.is_shift_incharge or current_user.is_super_admin %}
+  <a href="{{ url_for('engineer.new_flight_coverage') }}" class="btn btn-pia-gold btn-sm"><i class="bi bi-plus-lg me-1"></i>Log Flight Coverage</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-airplane-engines me-2"></i>Records</h6>
+    <span class="badge badge-role">{{ total_count }} total</span>
+  </div>
+  <div class="card-body p-0">
+    {% if coverages %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Station</th>
+            <th>Activity Performed</th>
+            <th>Aircraft Engineer</th>
+            <th>Date / Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in coverages %}
+          <tr>
+            <td class="small">{{ c.station.code }} &mdash; {{ c.station.name }}</td>
+            <td class="small">{{ c.activity_performed }}</td>
+            <td class="small">{{ c.logged_by.full_name if c.logged_by else '-' }}</td>
+            <td class="small">{{ c.created_at | dt }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div class="pagination-wrap p-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+            <a class="page-link" href="{{ url_for('engineer.list_flight_coverages', page=pagination.prev_num) }}">Previous</a>
+          </li>
+          {% for p in pagination.iter_pages() %}
+            {% if p %}
+              <li class="page-item {{ 'active' if p == pagination.page }}">
+                <a class="page-link" href="{{ url_for('engineer.list_flight_coverages', page=p) }}">{{ p }}</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+            <a class="page-link" href="{{ url_for('engineer.list_flight_coverages', page=pagination.next_num) }}">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+      {% set icon = 'bi-airplane-engines' %}
+      {% set title = 'No data available yet.' %}
+      {% set subtitle = 'Flight Coverages will appear here once logged.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

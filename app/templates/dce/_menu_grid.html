@@ -1,0 +1,16 @@
+{% macro menu_grid(cards) %}
+<div class="row g-3">
+  {% for c in cards %}
+  <div class="col-sm-6 col-xl-4">
+    <a class="menu-tile" href="{{ c.url }}">
+      <span class="menu-tile-icon"><i class="bi {{ c.icon }}"></i></span>
+      <span>
+        <div class="menu-tile-title">{{ c.label }}</div>
+        <div class="menu-tile-desc">{{ c.desc }}</div>
+      </span>
+      <i class="bi bi-chevron-right menu-tile-arrow"></i>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}

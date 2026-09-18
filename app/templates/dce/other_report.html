@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ report_label }} Report{% endblock %}
+{% block header_title %}Other Reports{% endblock %}
+{% block content %}
+
+<div class="mb-3 d-flex flex-wrap gap-2 no-print">
+  {% for key, label, icon in [
+      ('daily_activity', 'Daily Activity', 'bi-calendar-day'),
+      ('monthly_activity', 'Monthly Activity', 'bi-calendar-month'),
+      ('maintenance_check', 'Maintenance Check', 'bi-clipboard2-check'),
+      ('mic', 'MIC / Scheduled Maintenance', 'bi-clipboard2-pulse'),
+      ('quality_ri', 'QARI', 'bi-patch-check'),
+      ('tsr', 'TSR', 'bi-exclamation-triangle'),
+      ('pirep_unscheduled_maintenance', 'PIREP / Unscheduled Maintenance', 'bi-wrench-adjustable'),
+      ('replacement', 'Removal/Installation', 'bi-arrow-repeat'),
+      ('cf_removal', 'CF Removal', 'bi-dash-circle'),
+      ('cf', 'CF Added', 'bi-arrow-repeat'),
+  ] %}
+  <a href="{{ url_for('dce.other_report_view', report_key=key) }}" class="btn btn-sm {{ 'btn-pia-primary' if other_key == key else 'btn-outline-pia' }}">
+    <i class="bi {{ icon }} me-1"></i>{{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+{% include "partials/dce_filter_bar.html" %}
+
+<div class="card">
+  <div class="card-header-pia d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h6 class="mb-0"><i class="bi bi-file-earmark-bar-graph me-2"></i>{{ report_label }} Report</h6>
+    {% include "partials/dce_export_bar.html" %}
+  </div>
+  <div class="card-body pt-3 pb-0 px-3 border-bottom no-print">
+    <form method="get" class="d-flex align-items-center gap-2">
+      {% for k, v in request.args.items() if k != 'sort' %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+      <label class="form-label small mb-0">Sort by</label>
+      <select name="sort" class="form-select form-select-sm w-auto" data-auto-submit>
+        {% for value, label in sort_choices %}
+        <option value="{{ value }}" {{ 'selected' if sort == value }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+  <div class="card-body p-0">
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Date</th><th>Station</th><th>Shift</th><th>Aircraft Engineer</th><th>Aircraft</th>
+            <th>Activity Type</th><th>Remarks</th><th class="no-print">View</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in rows %}
+          <tr>
+            <td>{{ a.activity_date | date_fmt }}</td>
+            <td>{{ a.station.code if a.station else '-' }}</td>
+            <td>{{ a.shift.name.label if a.shift else '-' }}</td>
+            <td>
+              {% if a.crs_engineer or a.second_engineer %}
+                {% if a.crs_engineer %}<div class="small">CRS: {{ a.crs_engineer.full_name }}</div>{% endif %}
+                {% if a.second_engineer %}<div class="small">Second Aircraft Engineer: {{ a.second_engineer.full_name }}</div>{% endif %}
+              {% else %}
+                {{ a.logged_by.full_name if a.logged_by else '-' }}
+              {% endif %}
+            </td>
+            <td>{{ a.aircraft.registration if a.aircraft else '-' }}</td>
+            <td>{{ a.activity_type | enum_label }}</td>
+            <td class="small">{{ a.remarks or '-' }}</td>
+            <td class="no-print">
+              <a href="{{ url_for('engineer.view_activity', activity_id=a.id, next=request.full_path) }}" class="btn btn-sm btn-outline-pia" title="View activity"><i class="bi bi-eye"></i></a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-file-earmark-bar-graph' %}
+      {% set title = 'No data available yet.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

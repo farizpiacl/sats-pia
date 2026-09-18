@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Aircraft Report{% endblock %}
+{% block header_title %}Aircraft Report{% endblock %}
+{% block content %}
+
+{% include "partials/dce_filter_bar.html" %}
+
+<div class="card">
+  <div class="card-header-pia d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h6 class="mb-0"><i class="bi bi-airplane me-2"></i>Aircraft Report</h6>
+    {% include "partials/dce_export_bar.html" %}
+  </div>
+  <div class="card-body p-0">
+    {% if rows %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Registration</th><th>Aircraft Type</th><th>Airline</th>
+            <th class="text-end">Maintenance Check</th><th class="text-end">TSR</th>
+            <th class="text-end">MIC</th><th class="text-end">Removal/Installation</th><th class="text-end">QARI</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><strong>{{ r.aircraft.registration }}</strong> {% if r.aircraft.category.value == 'pia' %}<span class="badge badge-role ms-1">PIA</span>{% else %}<span class="badge badge-gold ms-1">3rd Party</span>{% endif %}</td>
+            <td>{{ r.aircraft.aircraft_type }}</td>
+            <td>{{ r.aircraft.airline.name }}</td>
+            <td class="text-end">{{ r.maintenance_check }}</td>
+            <td class="text-end">{{ r.tsr }}</td>
+            <td class="text-end">{{ r.mic }}</td>
+            <td class="text-end">{{ r.replacement }}</td>
+            <td class="text-end">{{ r.ri }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-airplane' %}
+      {% set title = 'No data available yet.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

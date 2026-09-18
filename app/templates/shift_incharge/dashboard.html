@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Shift Incharge Dashboard{% endblock %}
+{% block header_title %}Shift Incharge Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+  <div>
+    <h4 class="mb-1">Shift Overview</h4>
+    <p class="text-muted mb-0">
+      {% if my_shifts %}
+        Managing: {% for s in my_shifts %}<span class="badge badge-role me-1">{{ s.name.label }} &middot; {{ s.station.code }}</span>{% endfor %}
+      {% else %}
+        No shift is currently assigned to your account.
+      {% endif %}
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    {% if current_user.is_shift_incharge %}
+    <a href="{{ url_for('engineer.create_activity') }}" class="btn btn-pia-gold">
+      <i class="bi bi-plus-square me-1"></i>Add New Activity
+    </a>
+    {% endif %}
+    <a href="{{ url_for('shift_incharge.shift_monitoring') }}" class="btn btn-outline-pia">
+      <i class="bi bi-list-check me-1"></i>View Shift Activities
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-collection stat-icon"></i>
+        <div class="stat-value">{{ kpis.activities }}</div>
+        <div class="stat-label">Activities</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='maintenance_check') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-clipboard2-check stat-icon"></i>
+        <div class="stat-value">{{ kpis.maintenance_check }}</div>
+        <div class="stat-label">Maintenance Check</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='tsr') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-exclamation-triangle stat-icon"></i>
+        <div class="stat-value">{{ kpis.tsr }}</div>
+        <div class="stat-label">TSR</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='mic') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-clipboard2-pulse stat-icon"></i>
+        <div class="stat-value">{{ kpis.mic }}</div>
+        <div class="stat-label">MIC / Scheduled Maintenance</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='quality', qari_status='closed') }}" class="text-decoration-none text-reset">
+      <div class="stat-card">
+        <i class="bi bi-patch-check stat-icon"></i>
+        <div class="stat-value">{{ qari_closed.total }}</div>
+        <div class="stat-label">QARI Closed</div>
+        <div class="d-flex justify-content-center gap-3 mt-1">
+          <a href="{{ url_for('shift_incharge.shift_monitoring', category='quality', qari_status='closed', severity='significant') }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Significant: {{ qari_closed.significant }}
+          </a>
+          <a href="{{ url_for('shift_incharge.shift_monitoring', category='quality', qari_status='closed', severity='minor') }}"
+             class="small text-decoration-none" onclick="event.stopPropagation();">
+            Minor: {{ qari_closed.minor }}
+          </a>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='replacement') }}" class="text-decoration-none text-reset">
+    <div class="stat-card stat-card-sm"><i class="bi bi-arrow-repeat stat-icon"></i><div class="stat-value">{{ kpis.replacement }}</div><div class="stat-label">Removal/Installation</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='quality') }}" class="text-decoration-none text-reset">
+    <div class="stat-card stat-card-sm"><i class="bi bi-patch-check stat-icon"></i><div class="stat-value">{{ kpis.quality }}</div><div class="stat-label">QARI</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='cf_removal') }}" class="text-decoration-none text-reset">
+    <div class="stat-card stat-card-sm"><i class="bi bi-dash-circle stat-icon"></i><div class="stat-value">{{ kpis.cf_removal }}</div><div class="stat-label">CF Removal</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='cf') }}" class="text-decoration-none text-reset">
+    <div class="stat-card stat-card-sm"><i class="bi bi-arrow-repeat stat-icon"></i><div class="stat-value">{{ kpis.cf }}</div><div class="stat-label">CF Added</div></div>
+    </a>
+  </div>
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="{{ url_for('shift_incharge.shift_monitoring', category='pirep_unscheduled') }}" class="text-decoration-none text-reset">
+    <div class="stat-card stat-card-sm"><i class="bi bi-wrench-adjustable stat-icon"></i><div class="stat-value">{{ kpis.unscheduled }}</div><div class="stat-label">PIREP / Unscheduled Maintenance</div></div>
+    </a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card h-100">
+      <div class="card-header-pia"><h6><i class="bi bi-bar-chart me-2"></i>Activity by Category</h6></div>
+      <div class="card-body">
+        {% if kpis.activities %}
+        <canvas id="categoryChart" height="120"></canvas>
+        {% else %}
+          {% set icon = 'bi-bar-chart' %}
+          {% set title = 'No data available yet.' %}
+          {% set subtitle = 'Charts will populate once activities are logged.' %}
+          {% include "partials/empty_state.html" with context %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-pia">
+    <h6><i class="bi bi-journal-text me-2"></i>Recently Logged Activities</h6>
+    <a href="{{ url_for('shift_incharge.shift_monitoring') }}" class="btn btn-outline-pia btn-sm">View All</a>
+  </div>
+  <div class="card-body p-0">
+    {% if recent_activities %}
+    <div class="table-responsive">
+      <table class="table table-pia mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>Employee</th><th>Date</th><th>Activity Type</th><th>Aircraft</th><th>Logged At</th><th class="text-end">View</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in recent_activities %}
+          <tr>
+            <td class="small">{{ a.logged_by.full_name if a.logged_by else '-' }}</td>
+            <td class="small">{{ a.activity_date | date_fmt }}</td>
+            <td class="small">{{ a.activity_type | enum_label }}</td>
+            <td class="small">{{ a.aircraft.registration if a.aircraft else '-' }}</td>
+            <td class="small">{{ a.created_at | dt }}</td>
+            <td class="text-end">
+              <a href="{{ url_for('engineer.view_activity', activity_id=a.id) }}" class="btn btn-sm btn-outline-pia"><i class="bi bi-eye"></i> View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      {% set icon = 'bi-journal-text' %}
+      {% set title = 'Nothing logged yet.' %}
+      {% set subtitle = 'New activities from your shift will show up here.' %}
+      {% include "partials/empty_state.html" with context %}
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+{% if kpis.activities %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  const categoryChartEl = document.getElementById('categoryChart');
+  if (categoryChartEl) {
+    new Chart(categoryChartEl, {
+      type: 'bar',
+      data: {
+        labels: {{ category_chart.labels | tojson }},
+        datasets: [{
+          label: 'Activities',
+          data: {{ category_chart.data | tojson }},
+          backgroundColor: '#0d5c3f',
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  }
+</script>
+{% endif %}
+{% endblock %}
